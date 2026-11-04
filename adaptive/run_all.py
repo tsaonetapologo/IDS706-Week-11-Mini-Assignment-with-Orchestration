@@ -55,10 +55,11 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     render_graph(f"{OUT}/adaptive_graph.png", f"{OUT}/adaptive_graph.mmd")
     rows = []
+    open(f"{OUT}/adaptive_trace.jsonl", "w").close()
     for case in eval_suite.CASES:
         for name, fn in SYSTEMS.items():
             ds, target = datasets.prepare(case.dataset)
-            cfg = {"dataset": ds, "target": target, "target_score": 0.7, "budget": 3,
+            cfg = {"dataset": ds, "target": target, "case": case.id, "trace_path": f"{OUT}/adaptive_trace.jsonl", "target_score": 0.7, "budget": 3,
                    **{k: v for k, v in case.cfg.items() if k != "faults"}}
             with core.inject_faults(case.cfg.get("faults")):
                 res = fn(cfg)

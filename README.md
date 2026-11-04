@@ -4,9 +4,11 @@ End-to-end pipeline on the **MovieLens (ml-latest-small)** data: Airflow ingests
 
 ## Run it
 
-Requirements: Docker + Docker Compose (or open in VS Code with the Dev Containers extension using [.devcontainer/devcontainer.json](.devcontainer/devcontainer.json)).
+Requirements: Docker + Docker Compose.
 
 ```bash
+git clone --recurse-submodules https://github.com/tsaonetapologo/IDS706-Week-11-Mini-Assignment-with-Orchestration.git
+cd IDS706-Week-11-Mini-Assignment-with-Orchestration   # (submodule = class repo, only needed for Part 3)
 docker compose up -d --build          # Postgres + Airflow (webserver, scheduler)
 # UI: http://localhost:8080  (admin / admin); DAG "movielens_pipeline" is unpaused and scheduled @daily
 docker compose exec airflow-scheduler airflow dags trigger movielens_pipeline   # or use the UI
@@ -17,6 +19,10 @@ docker compose down                   # stop (add -v to wipe the database)
 ```
 
 The warehouse DB (`warehouse`) is also exposed on `localhost:5433` (user/password `airflow`).
+
+**Dev container:** open the folder in VS Code → "Dev Containers: Reopen in Container" ([.devcontainer/devcontainer.json](.devcontainer/devcontainer.json)). It uses the same compose stack, attaches to the Airflow image with the repo mounted at `/workspace`, and forwards port 8080. I validated it headlessly with the official `@devcontainers/cli` (`devcontainer up` + `devcontainer exec`: repo visible, `langgraph`/`sklearn` import, `movielens_pipeline` DAG listed); I did not click through the VS Code UI. Inside it you can run the same `python -m agents.workflow` / `python -m adaptive.run_all` commands.
+
+**Layout:** `dags/` Part 1 · `agents/` Part 2 · `adaptive/` Part 3 · `third_party/automl-research-lab` class repo (submodule) · `docs/` screenshots and results.
 
 ## Part 1 – Airflow pipeline
 
@@ -58,6 +64,8 @@ Code: [agents/workflow.py](agents/workflow.py), live graph rendering in [agents/
 
 ![agent graph](docs/agent_graph.png)
 
+*Note:* this Part 2 loop is my own small implementation (plain-Python agent nodes + a re-rendered graph image), written without the class repo; it follows the class pattern (train → evaluate → loop) but is not a modification of the class `student_loop` code, and the graph is a regenerated PNG rather than a live UI.
+
 **Results** (target label: avg rating ≥ 3.5; full log in [docs/agent_run_log.txt](docs/agent_run_log.txt), [docs/agent_results.json](docs/agent_results.json)):
 
 | Model | Val accuracy | Val F1 |
@@ -86,7 +94,8 @@ The baselines are the **actual class code** ([Kedar-V/automl-research-lab](https
 git clone --recurse-submodules <this repo>     # or: git submodule update --init
 docker compose build
 docker compose run --rm adaptive               # graph render + 8-case eval x 3 systems -> output/dashboard.html
-# optional LangSmith tracing: LANGSMITH_TRACING=true LANGSMITH_API_KEY=... docker compose run --rm adaptive
+# optional LangSmith: LANGSMITH_TRACING=true LANGSMITH_API_KEY=... docker compose run --rm adaptive
+# always on: local per-node trace of the adaptive runs -> output/adaptive_trace.jsonl
 ```
 Code: [adaptive/graph.py](adaptive/graph.py) (LangGraph `StateGraph`), [adaptive/baselines.py](adaptive/baselines.py) (adapters around the class code), [adaptive/eval_suite.py](adaptive/eval_suite.py), [adaptive/run_all.py](adaptive/run_all.py). Dashboard: [docs/dashboard.html](docs/dashboard.html) ([screenshot](docs/part3_dashboard.png)); Mermaid: [docs/adaptive_graph.mmd](docs/adaptive_graph.mmd).
 
@@ -114,4 +123,4 @@ Code: [adaptive/graph.py](adaptive/graph.py) (LangGraph `StateGraph`), [adaptive
 - *Class simple loop:* adds model search and a judge, and it self-repairs a crashing fit (T3), but it has no data validation or load retry, so it crashed on a read failure and on missing labels. It is the most expensive on small data (3 fits for a worse F1 than the fixed baseline on T7).
 - *Adaptive graph:* the only system to pass all cases; the gains come from robustness (retry, label cleaning) rather than better models – on clean data (T1, T5, T6, T8) all three are within ~0.03 F1 of each other, and T6 is a three-way tie. It uses more fits than the fixed workflow on T6/T7 (3 vs 1).
 
-**Caveats.** (1) The agents are deterministic rule-based policies, not LLM-driven; LangSmith tracing is wired through env vars but I did not run it. (2) The test cases and thresholds are mine, and the faults are ones the adaptive system was built to handle, so the 8/8 is partly by construction; the clean-data cases show the honest parity. (3) After a first run showed my planner scored 0.0 F1 on the imbalanced data (trees first), I changed it to try balanced logistic regression first – i.e. one planner rule was adjusted after seeing a test result. (4) Single seed/split, small datasets (≤891 rows): differences of a few F1 points are noise. (5) Airflow's "coordination" score is inflated on failed runs because 0 fits trivially satisfies the fit-budget check; the *final* checks capture those failures. (6) The Airflow baseline is the class DAG's task functions run directly (not a live Airflow scheduler) so faults can be injected identically.
+**Caveats.** (1) The agents are deterministic rule-based policies, not LLM-driven. Tracing: a local JSONL tracer (`adaptive_trace.jsonl`, node start/end/error with timings) is always on and was run; LangSmith export is enabled by the env vars above but I did **not** run it (no API key), so that path is untested. (2) The test cases and thresholds are mine, and the faults are ones the adaptive system was built to handle, so the 8/8 is partly by construction; the clean-data cases show the honest parity. (3) After a first run showed my planner scored 0.0 F1 on the imbalanced data (trees first), I changed it to try balanced logistic regression first – i.e. one planner rule was adjusted after seeing a test result. (4) Single seed/split, small datasets (≤891 rows): differences of a few F1 points are noise. (5) Airflow's "coordination" score is inflated on failed runs because 0 fits trivially satisfies the fit-budget check; the *final* checks capture those failures. (6) The Airflow baseline is the class DAG's task functions run directly (not a live Airflow scheduler) so faults can be injected identically.

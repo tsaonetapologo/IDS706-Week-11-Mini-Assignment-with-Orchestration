@@ -2,7 +2,7 @@
   "name": "IDS706 Airflow + Agents",
   "dockerComposeFile": ["../docker-compose.yml"],
   "service": "airflow-webserver",
-  "workspaceFolder": "/opt/airflow",
+  "workspaceFolder": "/workspace",
   "shutdownAction": "stopCompose",
   "customizations": {
     "vscode": {

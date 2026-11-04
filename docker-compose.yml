@@ -20,6 +20,7 @@ x-airflow-common: &airflow-common
     - ./adaptive:/opt/airflow/adaptive
     - ./third_party:/opt/airflow/third_party
     - ./artifacts:/opt/airflow/artifacts
+    - .:/workspace
   depends_on:
     postgres:
       condition: service_healthy

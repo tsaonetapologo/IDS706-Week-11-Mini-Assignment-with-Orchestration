@@ -8,8 +8,11 @@ Adaptive behaviour (conditional edges on intermediate results):
   * Evaluator stops early on target / fit budget / plateau
   * Diagnostician reads the train-val gap and re-orders the queue (overfit -> simpler, underfit -> stronger)
 """
+import json
 import time
 from typing import Any, TypedDict
+
+from langchain_core.callbacks import BaseCallbackHandler
 
 import pandas as pd
 from langgraph.graph import END, START, StateGraph
@@ -163,10 +166,42 @@ def build():
     return g.compile()
 
 
+class JsonlTracer(BaseCallbackHandler):
+    """Local, offline trace: one JSON line per graph-node start/end/error (LangSmith is used in addition
+    when LANGSMITH_TRACING=true and LANGSMITH_API_KEY are set; LangGraph picks those up natively)."""
+
+    def __init__(self, path, case):
+        self.path, self.case, self.t0, self.names = path, case, {}, {}
+
+    def _w(self, rec):
+        with open(self.path, "a") as f:
+            f.write(json.dumps(rec, default=str) + "\n")
+
+    def on_chain_start(self, serialized, inputs, *, run_id, metadata=None, **kw):
+        node = (metadata or {}).get("langgraph_node")
+        if node and kw.get("name") == node:
+            self.t0[run_id], self.names[run_id] = time.time(), node
+            self._w({"case": self.case, "event": "start", "node": node})
+
+    def on_chain_end(self, outputs, *, run_id, **kw):
+        if run_id in self.names:
+            keys = sorted(outputs) if isinstance(outputs, dict) else []
+            self._w({"case": self.case, "event": "end", "node": self.names[run_id],
+                     "seconds": round(time.time() - self.t0[run_id], 4), "updated": keys})
+
+    def on_chain_error(self, error, *, run_id, **kw):
+        if run_id in self.names:
+            self._w({"case": self.case, "event": "error", "node": self.names[run_id], "error": str(error)[:200]})
+
+
 def run_adaptive(cfg):
     t = time.time()
+    config = {"recursion_limit": 60, "run_name": f"adaptive:{cfg.get('case', 'run')}",
+              "tags": ["ids706", "adaptive"]}
+    if cfg.get("trace_path"):
+        config["callbacks"] = [JsonlTracer(cfg["trace_path"], cfg.get("case", ""))]
     try:
-        out = build().invoke({"cfg": cfg, "path": [], "retries": {}}, {"recursion_limit": 60})
+        out = build().invoke({"cfg": cfg, "path": [], "retries": {}}, config)
     except Exception as e:
         return {"completed": False, "fits": 0, "path": ["crash"], "retries": {}, "error": str(e),
                 "seconds": time.time() - t}

@@ -14,7 +14,7 @@
         "publish"
       ],
       "retries": {},
-      "seconds": 0.2912724018096924
+      "seconds": 0.352877140045166
     },
     "score": 1.0,
     "passed": true,
@@ -42,7 +42,7 @@
         "holdout_eval"
       ],
       "retries": {},
-      "seconds": 0.11007380485534668
+      "seconds": 0.575925350189209
     },
     "score": 1.0,
     "passed": true,
@@ -72,7 +72,7 @@
         "reporter"
       ],
       "retries": {},
-      "seconds": 0.5588483810424805
+      "seconds": 0.774517297744751
     },
     "score": 1.0,
     "passed": true,
@@ -95,7 +95,7 @@
       ],
       "retries": {},
       "error": "injected read failure",
-      "seconds": 1.3113021850585938e-05
+      "seconds": 1.4543533325195312e-05
     },
     "score": 0.25,
     "passed": false,
@@ -118,7 +118,7 @@
       ],
       "retries": {},
       "error": "injected read failure",
-      "seconds": 0.0030319690704345703
+      "seconds": 0.003420114517211914
     },
     "score": 0.25,
     "passed": false,
@@ -152,7 +152,7 @@
       "retries": {
         "loader": 2
       },
-      "seconds": 0.443328857421875
+      "seconds": 1.1857564449310303
     },
     "score": 1.0,
     "passed": true,
@@ -177,7 +177,7 @@
       ],
       "retries": {},
       "error": "injected training failure",
-      "seconds": 0.004453897476196289
+      "seconds": 0.004932880401611328
     },
     "score": 0.25,
     "passed": false,
@@ -210,7 +210,7 @@
         "holdout_eval"
       ],
       "retries": {},
-      "seconds": 0.11736059188842773
+      "seconds": 0.11770939826965332
     },
     "score": 1.0,
     "passed": true,
@@ -245,7 +245,7 @@
       "retries": {
         "trainer": 3
       },
-      "seconds": 0.5535390377044678
+      "seconds": 0.4728586673736572
     },
     "score": 1.0,
     "passed": true,
@@ -270,7 +270,7 @@
       ],
       "retries": {},
       "error": "Input y contains NaN.",
-      "seconds": 0.0036878585815429688
+      "seconds": 0.0040967464447021484
     },
     "score": 0.25,
     "passed": false,
@@ -293,7 +293,7 @@
       ],
       "retries": {},
       "error": "Input y contains NaN.",
-      "seconds": 0.011601686477661133
+      "seconds": 0.011735916137695312
     },
     "score": 0.0,
     "passed": false,
@@ -324,7 +324,7 @@
         "reporter"
       ],
       "retries": {},
-      "seconds": 0.8981475830078125
+      "seconds": 1.1234567165374756
     },
     "score": 1.0,
     "passed": true,
@@ -351,7 +351,7 @@
         "publish"
       ],
       "retries": {},
-      "seconds": 0.22684907913208008
+      "seconds": 0.8311917781829834
     },
     "score": 1.0,
     "passed": true,
@@ -379,7 +379,7 @@
         "holdout_eval"
       ],
       "retries": {},
-      "seconds": 0.28539419174194336
+      "seconds": 0.12534165382385254
     },
     "score": 1.0,
     "passed": true,
@@ -409,7 +409,7 @@
         "reporter"
       ],
       "retries": {},
-      "seconds": 0.8939268589019775
+      "seconds": 0.8088316917419434
     },
     "score": 1.0,
     "passed": true,
@@ -436,7 +436,7 @@
         "publish"
       ],
       "retries": {},
-      "seconds": 0.07583212852478027
+      "seconds": 0.04348945617675781
     },
     "score": 1.0,
     "passed": true,
@@ -474,7 +474,7 @@
         "holdout_eval"
       ],
       "retries": {},
-      "seconds": 0.18971824645996094
+      "seconds": 0.12710332870483398
     },
     "score": 1.0,
     "passed": true,
@@ -510,7 +510,7 @@
         "reporter"
       ],
       "retries": {},
-      "seconds": 1.129363775253296
+      "seconds": 0.30220746994018555
     },
     "score": 1.0,
     "passed": true,
@@ -537,7 +537,7 @@
         "publish"
       ],
       "retries": {},
-      "seconds": 0.2168128490447998
+      "seconds": 0.1473987102508545
     },
     "score": 1.0,
     "passed": true,
@@ -575,7 +575,7 @@
         "holdout_eval"
       ],
       "retries": {},
-      "seconds": 0.3714253902435303
+      "seconds": 0.19193387031555176
     },
     "score": 1.0,
     "passed": true,
@@ -611,7 +611,7 @@
         "reporter"
       ],
       "retries": {},
-      "seconds": 0.5989422798156738
+      "seconds": 0.20772480964660645
     },
     "score": 1.0,
     "passed": true,
@@ -638,7 +638,7 @@
         "publish"
       ],
       "retries": {},
-      "seconds": 0.4309122562408447
+      "seconds": 0.1795668601989746
     },
     "score": 1.0,
     "passed": true,
@@ -666,7 +666,7 @@
         "holdout_eval"
       ],
       "retries": {},
-      "seconds": 0.11955404281616211
+      "seconds": 0.08784794807434082
     },
     "score": 1.0,
     "passed": true,
@@ -696,7 +696,7 @@
         "reporter"
       ],
       "retries": {},
-      "seconds": 0.8061423301696777
+      "seconds": 0.8706645965576172
     },
     "score": 1.0,
     "passed": true,

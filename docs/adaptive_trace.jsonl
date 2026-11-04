@@ -1,0 +1,132 @@
+{"case": "T1_nominal", "event": "start", "node": "loader"}
+{"case": "T1_nominal", "event": "end", "node": "loader", "seconds": 0.003, "updated": ["df", "error", "path"]}
+{"case": "T1_nominal", "event": "start", "node": "validator"}
+{"case": "T1_nominal", "event": "end", "node": "validator", "seconds": 0.002, "updated": ["error", "path", "profile"]}
+{"case": "T1_nominal", "event": "start", "node": "planner"}
+{"case": "T1_nominal", "event": "end", "node": "planner", "seconds": 0.0005, "updated": ["fits", "history", "path", "queue", "retries"]}
+{"case": "T1_nominal", "event": "start", "node": "trainer"}
+{"case": "T1_nominal", "event": "end", "node": "trainer", "seconds": 0.3586, "updated": ["best", "current", "error", "fits", "history", "path", "queue"]}
+{"case": "T1_nominal", "event": "start", "node": "evaluator"}
+{"case": "T1_nominal", "event": "end", "node": "evaluator", "seconds": 0.0003, "updated": ["path"]}
+{"case": "T1_nominal", "event": "start", "node": "reporter"}
+{"case": "T1_nominal", "event": "end", "node": "reporter", "seconds": 0.4025, "updated": ["path", "result"]}
+{"case": "T2_read_outage", "event": "start", "node": "loader"}
+{"case": "T2_read_outage", "event": "end", "node": "loader", "seconds": 0.0003, "updated": ["error", "path", "retries"]}
+{"case": "T2_read_outage", "event": "start", "node": "loader"}
+{"case": "T2_read_outage", "event": "end", "node": "loader", "seconds": 0.0002, "updated": ["error", "path", "retries"]}
+{"case": "T2_read_outage", "event": "start", "node": "loader"}
+{"case": "T2_read_outage", "event": "end", "node": "loader", "seconds": 0.0011, "updated": ["df", "error", "path"]}
+{"case": "T2_read_outage", "event": "start", "node": "validator"}
+{"case": "T2_read_outage", "event": "end", "node": "validator", "seconds": 0.0007, "updated": ["error", "path", "profile"]}
+{"case": "T2_read_outage", "event": "start", "node": "planner"}
+{"case": "T2_read_outage", "event": "end", "node": "planner", "seconds": 0.0002, "updated": ["fits", "history", "path", "queue", "retries"]}
+{"case": "T2_read_outage", "event": "start", "node": "trainer"}
+{"case": "T2_read_outage", "event": "end", "node": "trainer", "seconds": 0.3415, "updated": ["best", "current", "error", "fits", "history", "path", "queue"]}
+{"case": "T2_read_outage", "event": "start", "node": "evaluator"}
+{"case": "T2_read_outage", "event": "end", "node": "evaluator", "seconds": 0.0003, "updated": ["path"]}
+{"case": "T2_read_outage", "event": "start", "node": "reporter"}
+{"case": "T2_read_outage", "event": "end", "node": "reporter", "seconds": 0.8372, "updated": ["path", "result"]}
+{"case": "T3_flaky_trainer", "event": "start", "node": "loader"}
+{"case": "T3_flaky_trainer", "event": "end", "node": "loader", "seconds": 0.0013, "updated": ["df", "error", "path"]}
+{"case": "T3_flaky_trainer", "event": "start", "node": "validator"}
+{"case": "T3_flaky_trainer", "event": "end", "node": "validator", "seconds": 0.0009, "updated": ["error", "path", "profile"]}
+{"case": "T3_flaky_trainer", "event": "start", "node": "planner"}
+{"case": "T3_flaky_trainer", "event": "end", "node": "planner", "seconds": 0.0002, "updated": ["fits", "history", "path", "queue", "retries"]}
+{"case": "T3_flaky_trainer", "event": "start", "node": "trainer"}
+{"case": "T3_flaky_trainer", "event": "end", "node": "trainer", "seconds": 0.0014, "updated": ["error", "path", "retries"]}
+{"case": "T3_flaky_trainer", "event": "start", "node": "trainer"}
+{"case": "T3_flaky_trainer", "event": "end", "node": "trainer", "seconds": 0.0014, "updated": ["error", "path", "retries"]}
+{"case": "T3_flaky_trainer", "event": "start", "node": "trainer"}
+{"case": "T3_flaky_trainer", "event": "end", "node": "trainer", "seconds": 0.0013, "updated": ["error", "path", "retries"]}
+{"case": "T3_flaky_trainer", "event": "start", "node": "trainer"}
+{"case": "T3_flaky_trainer", "event": "end", "node": "trainer", "seconds": 0.2207, "updated": ["best", "current", "error", "fits", "history", "path", "queue"]}
+{"case": "T3_flaky_trainer", "event": "start", "node": "evaluator"}
+{"case": "T3_flaky_trainer", "event": "end", "node": "evaluator", "seconds": 0.0002, "updated": ["path"]}
+{"case": "T3_flaky_trainer", "event": "start", "node": "reporter"}
+{"case": "T3_flaky_trainer", "event": "end", "node": "reporter", "seconds": 0.2411, "updated": ["path", "result"]}
+{"case": "T4_bad_labels", "event": "start", "node": "loader"}
+{"case": "T4_bad_labels", "event": "end", "node": "loader", "seconds": 0.0011, "updated": ["df", "error", "path"]}
+{"case": "T4_bad_labels", "event": "start", "node": "validator"}
+{"case": "T4_bad_labels", "event": "end", "node": "validator", "seconds": 0.0007, "updated": ["error", "path", "profile"]}
+{"case": "T4_bad_labels", "event": "start", "node": "cleaner"}
+{"case": "T4_bad_labels", "event": "end", "node": "cleaner", "seconds": 0.0005, "updated": ["df", "path"]}
+{"case": "T4_bad_labels", "event": "start", "node": "planner"}
+{"case": "T4_bad_labels", "event": "end", "node": "planner", "seconds": 0.0002, "updated": ["fits", "history", "path", "queue", "retries"]}
+{"case": "T4_bad_labels", "event": "start", "node": "trainer"}
+{"case": "T4_bad_labels", "event": "end", "node": "trainer", "seconds": 0.6403, "updated": ["best", "current", "error", "fits", "history", "path", "queue"]}
+{"case": "T4_bad_labels", "event": "start", "node": "evaluator"}
+{"case": "T4_bad_labels", "event": "end", "node": "evaluator", "seconds": 0.0003, "updated": ["path"]}
+{"case": "T4_bad_labels", "event": "start", "node": "reporter"}
+{"case": "T4_bad_labels", "event": "end", "node": "reporter", "seconds": 0.4765, "updated": ["path", "result"]}
+{"case": "T5_missing_features", "event": "start", "node": "loader"}
+{"case": "T5_missing_features", "event": "end", "node": "loader", "seconds": 0.0016, "updated": ["df", "error", "path"]}
+{"case": "T5_missing_features", "event": "start", "node": "validator"}
+{"case": "T5_missing_features", "event": "end", "node": "validator", "seconds": 0.0019, "updated": ["error", "path", "profile"]}
+{"case": "T5_missing_features", "event": "start", "node": "planner"}
+{"case": "T5_missing_features", "event": "end", "node": "planner", "seconds": 0.0005, "updated": ["fits", "history", "path", "queue", "retries"]}
+{"case": "T5_missing_features", "event": "start", "node": "trainer"}
+{"case": "T5_missing_features", "event": "end", "node": "trainer", "seconds": 0.4992, "updated": ["best", "current", "error", "fits", "history", "path", "queue"]}
+{"case": "T5_missing_features", "event": "start", "node": "evaluator"}
+{"case": "T5_missing_features", "event": "end", "node": "evaluator", "seconds": 0.0003, "updated": ["path"]}
+{"case": "T5_missing_features", "event": "start", "node": "reporter"}
+{"case": "T5_missing_features", "event": "end", "node": "reporter", "seconds": 0.2941, "updated": ["path", "result"]}
+{"case": "T6_imbalanced", "event": "start", "node": "loader"}
+{"case": "T6_imbalanced", "event": "end", "node": "loader", "seconds": 0.0021, "updated": ["df", "error", "path"]}
+{"case": "T6_imbalanced", "event": "start", "node": "validator"}
+{"case": "T6_imbalanced", "event": "end", "node": "validator", "seconds": 0.0008, "updated": ["error", "path", "profile"]}
+{"case": "T6_imbalanced", "event": "start", "node": "planner"}
+{"case": "T6_imbalanced", "event": "end", "node": "planner", "seconds": 0.0002, "updated": ["fits", "history", "path", "queue", "retries"]}
+{"case": "T6_imbalanced", "event": "start", "node": "trainer"}
+{"case": "T6_imbalanced", "event": "end", "node": "trainer", "seconds": 0.024, "updated": ["best", "current", "error", "fits", "history", "path", "queue"]}
+{"case": "T6_imbalanced", "event": "start", "node": "evaluator"}
+{"case": "T6_imbalanced", "event": "end", "node": "evaluator", "seconds": 0.0004, "updated": ["path"]}
+{"case": "T6_imbalanced", "event": "start", "node": "diagnostician"}
+{"case": "T6_imbalanced", "event": "end", "node": "diagnostician", "seconds": 0.0013, "updated": ["path", "queue"]}
+{"case": "T6_imbalanced", "event": "start", "node": "trainer"}
+{"case": "T6_imbalanced", "event": "end", "node": "trainer", "seconds": 0.2018, "updated": ["best", "current", "error", "fits", "history", "path", "queue"]}
+{"case": "T6_imbalanced", "event": "start", "node": "evaluator"}
+{"case": "T6_imbalanced", "event": "end", "node": "evaluator", "seconds": 0.0003, "updated": ["path"]}
+{"case": "T6_imbalanced", "event": "start", "node": "diagnostician"}
+{"case": "T6_imbalanced", "event": "end", "node": "diagnostician", "seconds": 0.0002, "updated": ["path", "queue"]}
+{"case": "T6_imbalanced", "event": "start", "node": "trainer"}
+{"case": "T6_imbalanced", "event": "end", "node": "trainer", "seconds": 0.0472, "updated": ["best", "current", "error", "fits", "history", "path", "queue"]}
+{"case": "T6_imbalanced", "event": "start", "node": "evaluator"}
+{"case": "T6_imbalanced", "event": "end", "node": "evaluator", "seconds": 0.0003, "updated": ["path"]}
+{"case": "T6_imbalanced", "event": "start", "node": "reporter"}
+{"case": "T6_imbalanced", "event": "end", "node": "reporter", "seconds": 0.0143, "updated": ["path", "result"]}
+{"case": "T7_tiny_data", "event": "start", "node": "loader"}
+{"case": "T7_tiny_data", "event": "end", "node": "loader", "seconds": 0.0017, "updated": ["df", "error", "path"]}
+{"case": "T7_tiny_data", "event": "start", "node": "validator"}
+{"case": "T7_tiny_data", "event": "end", "node": "validator", "seconds": 0.0025, "updated": ["error", "path", "profile"]}
+{"case": "T7_tiny_data", "event": "start", "node": "planner"}
+{"case": "T7_tiny_data", "event": "end", "node": "planner", "seconds": 0.0003, "updated": ["fits", "history", "path", "queue", "retries"]}
+{"case": "T7_tiny_data", "event": "start", "node": "trainer"}
+{"case": "T7_tiny_data", "event": "end", "node": "trainer", "seconds": 0.0295, "updated": ["best", "current", "error", "fits", "history", "path", "queue"]}
+{"case": "T7_tiny_data", "event": "start", "node": "evaluator"}
+{"case": "T7_tiny_data", "event": "end", "node": "evaluator", "seconds": 0.0007, "updated": ["path"]}
+{"case": "T7_tiny_data", "event": "start", "node": "diagnostician"}
+{"case": "T7_tiny_data", "event": "end", "node": "diagnostician", "seconds": 0.0005, "updated": ["path", "queue"]}
+{"case": "T7_tiny_data", "event": "start", "node": "trainer"}
+{"case": "T7_tiny_data", "event": "end", "node": "trainer", "seconds": 0.0819, "updated": ["best", "current", "error", "fits", "history", "path", "queue"]}
+{"case": "T7_tiny_data", "event": "start", "node": "evaluator"}
+{"case": "T7_tiny_data", "event": "end", "node": "evaluator", "seconds": 0.0003, "updated": ["path"]}
+{"case": "T7_tiny_data", "event": "start", "node": "diagnostician"}
+{"case": "T7_tiny_data", "event": "end", "node": "diagnostician", "seconds": 0.0002, "updated": ["path", "queue"]}
+{"case": "T7_tiny_data", "event": "start", "node": "trainer"}
+{"case": "T7_tiny_data", "event": "end", "node": "trainer", "seconds": 0.0478, "updated": ["best", "current", "error", "fits", "history", "path", "queue"]}
+{"case": "T7_tiny_data", "event": "start", "node": "evaluator"}
+{"case": "T7_tiny_data", "event": "end", "node": "evaluator", "seconds": 0.0003, "updated": ["path"]}
+{"case": "T7_tiny_data", "event": "start", "node": "reporter"}
+{"case": "T7_tiny_data", "event": "end", "node": "reporter", "seconds": 0.0329, "updated": ["path", "result"]}
+{"case": "T8_tight_budget", "event": "start", "node": "loader"}
+{"case": "T8_tight_budget", "event": "end", "node": "loader", "seconds": 0.0052, "updated": ["df", "error", "path"]}
+{"case": "T8_tight_budget", "event": "start", "node": "validator"}
+{"case": "T8_tight_budget", "event": "end", "node": "validator", "seconds": 0.0012, "updated": ["error", "path", "profile"]}
+{"case": "T8_tight_budget", "event": "start", "node": "planner"}
+{"case": "T8_tight_budget", "event": "end", "node": "planner", "seconds": 0.0003, "updated": ["fits", "history", "path", "queue", "retries"]}
+{"case": "T8_tight_budget", "event": "start", "node": "trainer"}
+{"case": "T8_tight_budget", "event": "end", "node": "trainer", "seconds": 0.5566, "updated": ["best", "current", "error", "fits", "history", "path", "queue"]}
+{"case": "T8_tight_budget", "event": "start", "node": "evaluator"}
+{"case": "T8_tight_budget", "event": "end", "node": "evaluator", "seconds": 0.0003, "updated": ["path"]}
+{"case": "T8_tight_budget", "event": "start", "node": "reporter"}
+{"case": "T8_tight_budget", "event": "end", "node": "reporter", "seconds": 0.3011, "updated": ["path", "result"]}
