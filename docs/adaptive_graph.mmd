@@ -26,6 +26,7 @@ graph TD;
 	trainer -.-> reporter;
 	validator -.-> cleaner;
 	validator -.-> planner;
+	validator -.-> reporter;
 	reporter --> __end__;
 	loader -.-> loader;
 	trainer -.-> trainer;

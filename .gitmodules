@@ -1,0 +1,3 @@
+[submodule "third_party/automl-research-lab"]
+	path = third_party/automl-research-lab
+	url = https://github.com/Kedar-V/automl-research-lab.git

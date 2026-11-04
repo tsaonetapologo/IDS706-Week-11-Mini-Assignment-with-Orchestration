@@ -18,6 +18,8 @@ x-airflow-common: &airflow-common
     - ./output:/opt/airflow/output
     - ./agents:/opt/airflow/agents
     - ./adaptive:/opt/airflow/adaptive
+    - ./third_party:/opt/airflow/third_party
+    - ./artifacts:/opt/airflow/artifacts
   depends_on:
     postgres:
       condition: service_healthy

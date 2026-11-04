@@ -1,16 +1,17 @@
-"""Adaptive multi-agent workflow built as a LangGraph StateGraph.
+"""Adaptive multi-agent workflow as a LangGraph StateGraph (CSV in, holdout F1 out).
 
 Agents: Loader, Validator, Cleaner, Planner, Trainer, Evaluator, Diagnostician, Reporter.
-Adaptive behaviour (all via conditional edges on intermediate state):
-  * Loader/Trainer failures  -> retry (bounded), then degrade gracefully to Reporter
-  * Validator finds NaNs      -> route through Cleaner
-  * Planner picks the model queue from the data profile (size, class imbalance)
-  * Evaluator stops early on target / budget / plateau
+Adaptive behaviour (conditional edges on intermediate results):
+  * Loader / Trainer failures -> bounded retry, then graceful exit to Reporter
+  * Validator finds bad labels -> routed through Cleaner (skipped otherwise; feature NaNs are handled by the imputer)
+  * Planner picks a model queue from the data profile (tiny data -> simple models, imbalance -> tree ensembles)
+  * Evaluator stops early on target / fit budget / plateau
   * Diagnostician reads the train-val gap and re-orders the queue (overfit -> simpler, underfit -> stronger)
 """
 import time
 from typing import Any, TypedDict
 
+import pandas as pd
 from langgraph.graph import END, START, StateGraph
 
 from adaptive import core
@@ -20,155 +21,128 @@ MAX_RETRIES = 3
 
 class S(TypedDict, total=False):
     cfg: dict
-    faults: Any
     df: Any
-    split: tuple
     profile: dict
     queue: list
     current: str
-    model: Any
-    prep: Any
-    class_weight: Any
-    metric: str
     history: list
     best: dict
     error: str
     retries: dict
     fits: int
     path: list
-    status: str
     result: dict
 
 
-def _visit(s, name):
-    return (s.get("path") or []) + [name]
+def _p(s, n):
+    return (s.get("path") or []) + [n]
 
 
 def loader(s):
     r = dict(s.get("retries") or {})
     try:
-        df = core.load_raw(s["cfg"], s["faults"])
-        return {"df": df, "error": "", "path": _visit(s, "loader")}
-    except core.TransientError as e:
+        return {"df": pd.read_csv(s["cfg"]["dataset"]), "error": "", "path": _p(s, "loader")}
+    except Exception as e:
         r["loader"] = r.get("loader", 0) + 1
-        return {"error": str(e), "retries": r, "path": _visit(s, "loader")}
+        return {"error": str(e), "retries": r, "path": _p(s, "loader")}
 
 
 def after_loader(s):
-    if not s.get("error"):
+    if not s["error"]:
         return "validator"
     return "loader" if s["retries"]["loader"] <= MAX_RETRIES else "reporter"
 
 
 def validator(s):
-    df = s["df"]
-    X, y = core.build_xy(df, s["cfg"].get("label_threshold", 3.5))
-    prof = {
-        "n": len(df),
-        "nan_cells": int(X.isna().sum().sum()),
-        "minority": float(min(y.mean(), 1 - y.mean())),
-    }
-    return {"profile": prof, "path": _visit(s, "validator")}
+    df, t = s["df"], s["cfg"]["target"]
+    if t not in df.columns:
+        return {"error": f"target {t} missing", "profile": {"bad": True}, "path": _p(s, "validator")}
+    y = df[t].dropna()
+    rate = float(y.mean()) if len(y) else 0.0
+    prof = {"n": int(len(y)), "nan_target": int(df[t].isna().sum()),
+            "minority": min(rate, 1 - rate), "drops": _drops(df, t)}
+    return {"profile": prof, "error": "", "path": _p(s, "validator")}
+
+
+def _drops(df, t):
+    return list(_safe_profile(df, t).get("recommended_drops") or [])
+
+
+def _safe_profile(df, t):
+    try:
+        return core._heuristic_profile(df.dropna(subset=[t]), t)
+    except Exception:
+        return {}
 
 
 def after_validator(s):
-    return "cleaner" if s["profile"]["nan_cells"] > 0 else "planner"
+    if s.get("error"):
+        return "reporter"
+    return "cleaner" if s["profile"]["nan_target"] > 0 else "planner"
 
 
 def cleaner(s):
-    df = s["df"].copy()
-    for col in ("year", "n_ratings", "n_tags"):
-        df[col] = df[col].fillna(df[col].median())
-    prof = dict(s["profile"], nan_cells=0)
-    return {"df": df, "profile": prof, "path": _visit(s, "cleaner")}
+    df = s["df"].dropna(subset=[s["cfg"]["target"]]).reset_index(drop=True)
+    return {"df": df, "path": _p(s, "cleaner")}
 
 
 def planner(s):
-    p, cfg = s["profile"], s["cfg"]
-    X, y = core.build_xy(s["df"], cfg.get("label_threshold", 3.5))
-    imbalanced = p["minority"] < 0.25
-    small = p["n"] < 1000
-    if small:  # little data: start simple to avoid overfitting
-        queue = ["LogisticRegression", "DecisionTree(depth=3)", "DecisionTree(depth=6)", "RandomForest(300)"]
-    elif imbalanced:  # models that accept class_weight
-        queue = ["RandomForest(300)", "DecisionTree(depth=6)", "LogisticRegression"]
-    else:  # plenty of balanced data: start with the strongest general model
-        queue = ["GradientBoosting", "RandomForest(300)", "GradientBoosting(deep)", "LogisticRegression"]
-    return {
-        "split": core.split3(X, y),
-        "queue": queue,
-        "class_weight": "balanced" if imbalanced else None,
-        "metric": "f1" if imbalanced else "accuracy",
-        "history": [], "fits": 0, "retries": s.get("retries") or {},
-        "path": _visit(s, "planner"),
-    }
+    p = s["profile"]
+    if p["n"] < 200:
+        q = ["LogReg", "RF(depth=3)", "RF(depth=6)", "HGB"]
+    elif p["minority"] < 0.20:
+        q = ["LogReg", "RF(depth=3)", "RF(depth=6)", "HGB"]  # rare positives: balanced LR before overfit-prone trees
+    else:
+        q = ["HGB", "RF(depth=6)", "LogReg", "HGB(slow,200)"]
+    return {"queue": q, "history": [], "fits": 0, "retries": s.get("retries") or {}, "path": _p(s, "planner")}
 
 
 def trainer(s):
-    name = s["queue"][0]
-    Xtr, _, _, ytr, _, _ = s["split"]
-    r = dict(s["retries"])
+    name, r = s["queue"][0], dict(s["retries"])
     try:
-        s["faults"].maybe_fail("train_fail")
-        model, prep = core.make_model(name, s["class_weight"])
-        model.fit(prep(Xtr), ytr)
-        return {"current": name, "model": model, "prep": prep, "fits": s["fits"] + 1,
-                "error": "", "path": _visit(s, "trainer")}
+        res = core.fit_eval(s["df"], s["cfg"]["target"], core.POOL[name][0], drops=s["profile"]["drops"])
+        rec = {"model": name, "val": res["f1"], "gap": res["train_f1"] - res["f1"]}
+        hist = s["history"] + [rec]
+        best = max(hist, key=lambda h: h["val"])
+        return {"current": name, "history": hist, "best": best, "fits": s["fits"] + 1,
+                "queue": s["queue"][1:], "error": "", "path": _p(s, "trainer")}
     except core.TransientError as e:
         r["trainer"] = r.get("trainer", 0) + 1
-        return {"error": str(e), "retries": r, "path": _visit(s, "trainer")}
+        return {"error": str(e), "retries": r, "path": _p(s, "trainer")}
 
 
 def after_trainer(s):
-    if not s.get("error"):
-        return "evaluator"
-    return "trainer" if s["retries"]["trainer"] <= MAX_RETRIES else "reporter"
+    if s["error"]:
+        return "trainer" if s["retries"]["trainer"] <= MAX_RETRIES else "reporter"
+    return "evaluator"
 
 
 def evaluator(s):
-    Xtr, Xva, _, ytr, yva, _ = s["split"]
-    m, prep, metric = s["model"], s["prep"], s["metric"]
-    val = core.score(yva, m.predict(prep(Xva)), metric)
-    tr = core.score(ytr, m.predict(prep(Xtr)), metric)
-    rec = {"model": s["current"], "val": val, "train": tr, "gap": tr - val}
-    hist = s["history"] + [rec]
-    best = max(hist, key=lambda h: h["val"])
-    best = dict(best, model_obj=(m if best is rec else s["best"]["model_obj"]),
-                prep=(prep if best is rec else s["best"]["prep"]))
-    return {"history": hist, "best": best, "queue": s["queue"][1:], "path": _visit(s, "evaluator")}
+    return {"path": _p(s, "evaluator")}
 
 
 def after_evaluator(s):
-    cfg = s["cfg"]
-    last = s["history"][-1]
-    if last["val"] >= cfg.get("target", 0.66):
+    cfg, h = s["cfg"], s["history"]
+    if h[-1]["val"] >= cfg.get("target_score", 0.7) or not s["queue"] or s["fits"] >= cfg.get("budget", 3):
         return "reporter"
-    if not s["queue"] or s["fits"] >= cfg.get("max_fits", 5):
-        return "reporter"
-    if len(s["history"]) >= 3 and s["best"]["val"] <= s["history"][-3]["val"] + 1e-9:
-        return "reporter"  # plateau: no improvement over the last 2 attempts
+    if len(h) >= 3 and s["best"]["val"] <= h[-3]["val"] + 1e-9:
+        return "reporter"  # plateau
     return "diagnostician"
 
 
 def diagnostician(s):
-    last, q = s["history"][-1], list(s["queue"])
-    rank = lambda n: core.POOL[n][1]
-    # Overfit -> try the simplest remaining model; underfit -> the most flexible remaining one.
-    q.sort(key=rank, reverse=(last["gap"] <= 0.10))
-    return {"queue": q, "path": _visit(s, "diagnostician")}
+    q = sorted(s["queue"], key=lambda n: core.POOL[n][1], reverse=(s["history"][-1]["gap"] <= 0.10))
+    return {"queue": q, "path": _p(s, "diagnostician")}
 
 
 def reporter(s):
-    path = _visit(s, "reporter")
-    if "best" not in s or not s.get("best"):
-        return {"status": "failed", "path": path,
-                "result": {"completed": False, "fits": s.get("fits", 0)}}
-    b = s["best"]
-    _, _, Xte, _, _, yte = s["split"]
-    test = core.score(yte, b["model_obj"].predict(b["prep"](Xte)), s["metric"])
-    return {"status": "ok", "path": path, "result": {
-        "completed": True, "model": b["model"], "metric_name": s["metric"], "test_metric": test,
-        "val_metric": b["val"], "gap": b["gap"], "fits": s["fits"]}}
+    path = _p(s, "reporter")
+    if s.get("error") or not s.get("best"):
+        return {"path": path, "result": {"completed": False, "fits": s.get("fits", 0)}}
+    b, cfg = s["best"], s["cfg"]
+    f1 = core.holdout_f1(cfg["dataset"], cfg["target"], core.POOL[b["model"]][0], s["profile"]["drops"])
+    return {"path": path, "result": {"completed": True, "model": b["model"], "test_metric": f1,
+                                     "val_metric": b["val"], "fits": s["fits"]}}
 
 
 def build():
@@ -179,7 +153,7 @@ def build():
         g.add_node(n, f)
     g.add_edge(START, "loader")
     g.add_conditional_edges("loader", after_loader, ["loader", "validator", "reporter"])
-    g.add_conditional_edges("validator", after_validator, ["cleaner", "planner"])
+    g.add_conditional_edges("validator", after_validator, ["cleaner", "planner", "reporter"])
     g.add_edge("cleaner", "planner")
     g.add_edge("planner", "trainer")
     g.add_conditional_edges("trainer", after_trainer, ["trainer", "evaluator", "reporter"])
@@ -191,8 +165,9 @@ def build():
 
 def run_adaptive(cfg):
     t = time.time()
-    out = build().invoke({"cfg": cfg, "faults": core.Faults(cfg.get("faults")), "path": [], "retries": {}},
-                         {"recursion_limit": 60})
-    res = dict(out["result"], path=out["path"], retries=out.get("retries", {}), seconds=time.time() - t,
-               system="adaptive_langgraph")
-    return res
+    try:
+        out = build().invoke({"cfg": cfg, "path": [], "retries": {}}, {"recursion_limit": 60})
+    except Exception as e:
+        return {"completed": False, "fits": 0, "path": ["crash"], "retries": {}, "error": str(e),
+                "seconds": time.time() - t}
+    return dict(out["result"], path=out["path"], retries=out.get("retries", {}), seconds=time.time() - t)

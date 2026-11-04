@@ -224,3 +224,4 @@ data/raw/
 data/processed/
 output/*
 !output/.gitkeep
+artifacts/

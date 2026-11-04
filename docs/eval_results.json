@@ -4,78 +4,64 @@
     "system": "airflow_fixed",
     "result": {
       "completed": true,
-      "model": "RandomForest(300)",
-      "metric_name": "accuracy",
-      "test_metric": 0.6426735218508998,
+      "model": "logistic_regression",
+      "test_metric": 0.7375886524822695,
       "fits": 1,
       "path": [
-        "ingest",
-        "train",
-        "evaluate"
+        "validate_csv",
+        "profile_light",
+        "train_baseline",
+        "publish"
       ],
       "retries": {},
-      "seconds": 0.42867016792297363,
-      "system": "airflow_fixed"
+      "seconds": 0.2912724018096924
     },
-    "score": 0.625,
-    "passed": false,
+    "score": 1.0,
+    "passed": true,
     "checks": {
       "completed": true,
-      "test_metric>=0.65": false,
+      "holdout_f1>=0.7": true,
       "fits<=3": true
     },
-    "final_score": 0.5,
+    "final_score": 1.0,
     "coordination_score": 1.0
   },
   {
     "case": "T1_nominal",
-    "system": "simple_loop",
+    "system": "class_simple_loop",
     "result": {
       "completed": true,
-      "model": "GradientBoosting",
-      "metric_name": "accuracy",
-      "test_metric": 0.6709511568123393,
-      "fits": 4,
+      "model": "logistic_regression",
+      "test_metric": 0.7605633802816901,
+      "fits": 1,
       "path": [
-        "DataAgent",
-        "FeatureAgent",
-        "TrainerAgent",
-        "EvaluatorAgent",
-        "TunerAgent",
-        "TrainerAgent",
-        "EvaluatorAgent",
-        "TunerAgent",
-        "TrainerAgent",
-        "EvaluatorAgent",
-        "TunerAgent",
-        "TrainerAgent",
-        "EvaluatorAgent",
-        "ReporterAgent"
+        "data_scientist",
+        "hypothesis_generator",
+        "ml_engineer",
+        "judge",
+        "holdout_eval"
       ],
       "retries": {},
-      "seconds": 0.9875040054321289,
-      "system": "simple_loop"
+      "seconds": 0.11007380485534668
     },
-    "score": 0.75,
-    "passed": false,
+    "score": 1.0,
+    "passed": true,
     "checks": {
       "completed": true,
-      "test_metric>=0.65": true,
-      "fits<=3": false
+      "holdout_f1>=0.7": true,
+      "fits<=3": true
     },
     "final_score": 1.0,
-    "coordination_score": 0.0
+    "coordination_score": 1.0
   },
   {
     "case": "T1_nominal",
     "system": "adaptive_langgraph",
     "result": {
       "completed": true,
-      "model": "GradientBoosting",
-      "metric_name": "accuracy",
-      "test_metric": 0.6709511568123393,
-      "val_metric": 0.6760925449871465,
-      "gap": 0.032512185900752,
+      "model": "HGB",
+      "test_metric": 0.7669172932330827,
+      "val_metric": 0.7846153846153846,
       "fits": 1,
       "path": [
         "loader",
@@ -86,77 +72,72 @@
         "reporter"
       ],
       "retries": {},
-      "seconds": 0.25699877738952637,
-      "system": "adaptive_langgraph"
+      "seconds": 0.5588483810424805
     },
     "score": 1.0,
     "passed": true,
     "checks": {
       "completed": true,
-      "test_metric>=0.65": true,
+      "holdout_f1>=0.7": true,
       "fits<=3": true
     },
     "final_score": 1.0,
     "coordination_score": 1.0
   },
   {
-    "case": "T2_db_outage",
+    "case": "T2_read_outage",
     "system": "airflow_fixed",
     "result": {
       "completed": false,
       "fits": 0,
       "path": [
-        "ingest"
+        "validate_csv"
       ],
       "retries": {},
-      "error": "injected db_fail failure",
-      "seconds": 6.9141387939453125e-06,
-      "system": "airflow_fixed"
+      "error": "injected read failure",
+      "seconds": 1.3113021850585938e-05
     },
-    "score": 0.0,
+    "score": 0.25,
     "passed": false,
     "checks": {
       "completed": false,
-      "test_metric>=0.65": false,
-      "retried_loader>=2": false
+      "holdout_f1>=0.7": false,
+      "fits<=3": true
     },
     "final_score": 0.0,
-    "coordination_score": 0.0
+    "coordination_score": 1.0
   },
   {
-    "case": "T2_db_outage",
-    "system": "simple_loop",
+    "case": "T2_read_outage",
+    "system": "class_simple_loop",
     "result": {
       "completed": false,
       "fits": 0,
       "path": [
-        "DataAgent"
+        "crash"
       ],
       "retries": {},
-      "error": "injected db_fail failure",
-      "seconds": 2.86102294921875e-06,
-      "system": "simple_loop"
+      "error": "injected read failure",
+      "seconds": 0.0030319690704345703
     },
-    "score": 0.0,
+    "score": 0.25,
     "passed": false,
     "checks": {
       "completed": false,
-      "test_metric>=0.65": false,
-      "retried_loader>=2": false
+      "holdout_f1>=0.7": false,
+      "fits<=3": true
     },
     "final_score": 0.0,
-    "coordination_score": 0.0
+    "coordination_score": 1.0
   },
   {
-    "case": "T2_db_outage",
+    "case": "T2_read_outage",
     "system": "adaptive_langgraph",
     "result": {
       "completed": true,
-      "model": "GradientBoosting",
-      "metric_name": "accuracy",
-      "test_metric": 0.6709511568123393,
-      "val_metric": 0.6760925449871465,
-      "gap": 0.032512185900752,
+      "model": "HGB",
+      "test_metric": 0.7669172932330827,
+      "val_metric": 0.7846153846153846,
       "fits": 1,
       "path": [
         "loader",
@@ -171,81 +152,84 @@
       "retries": {
         "loader": 2
       },
-      "seconds": 0.2556440830230713,
-      "system": "adaptive_langgraph"
+      "seconds": 0.443328857421875
     },
     "score": 1.0,
     "passed": true,
     "checks": {
       "completed": true,
-      "test_metric>=0.65": true,
-      "retried_loader>=2": true
+      "holdout_f1>=0.7": true,
+      "fits<=3": true
     },
     "final_score": 1.0,
     "coordination_score": 1.0
   },
   {
-    "case": "T3_trainer_crash",
+    "case": "T3_flaky_trainer",
     "system": "airflow_fixed",
     "result": {
       "completed": false,
       "fits": 0,
       "path": [
-        "ingest",
-        "train"
+        "validate_csv",
+        "profile_light",
+        "train_baseline"
       ],
       "retries": {},
-      "error": "injected train_fail failure",
-      "seconds": 0.08739852905273438,
-      "system": "airflow_fixed"
+      "error": "injected training failure",
+      "seconds": 0.004453897476196289
     },
-    "score": 0.0,
+    "score": 0.25,
     "passed": false,
     "checks": {
       "completed": false,
-      "test_metric>=0.65": false,
-      "retried_trainer>=1": false
+      "holdout_f1>=0.7": false,
+      "fits<=3": true
     },
     "final_score": 0.0,
-    "coordination_score": 0.0
+    "coordination_score": 1.0
   },
   {
-    "case": "T3_trainer_crash",
-    "system": "simple_loop",
+    "case": "T3_flaky_trainer",
+    "system": "class_simple_loop",
     "result": {
-      "completed": false,
-      "fits": 0,
+      "completed": true,
+      "model": "random_forest",
+      "test_metric": 0.7352941176470589,
+      "fits": 1,
       "path": [
-        "DataAgent",
-        "FeatureAgent",
-        "TrainerAgent",
-        "EvaluatorAgent"
+        "data_scientist",
+        "hypothesis_generator",
+        "ml_engineer",
+        "judge",
+        "memory_writer",
+        "context_builder",
+        "hypothesis_generator",
+        "ml_engineer",
+        "judge",
+        "holdout_eval"
       ],
       "retries": {},
-      "error": "injected train_fail failure",
-      "seconds": 0.037535905838012695,
-      "system": "simple_loop"
+      "seconds": 0.11736059188842773
     },
-    "score": 0.0,
-    "passed": false,
+    "score": 1.0,
+    "passed": true,
     "checks": {
-      "completed": false,
-      "test_metric>=0.65": false,
-      "retried_trainer>=1": false
+      "completed": true,
+      "holdout_f1>=0.7": true,
+      "fits<=3": true
     },
-    "final_score": 0.0,
-    "coordination_score": 0.0
+    "final_score": 1.0,
+    "coordination_score": 1.0
   },
   {
-    "case": "T3_trainer_crash",
+    "case": "T3_flaky_trainer",
     "system": "adaptive_langgraph",
     "result": {
       "completed": true,
-      "model": "GradientBoosting",
-      "metric_name": "accuracy",
-      "test_metric": 0.6709511568123393,
-      "val_metric": 0.6760925449871465,
-      "gap": 0.032512185900752,
+      "model": "HGB",
+      "test_metric": 0.7669172932330827,
+      "val_metric": 0.7846153846153846,
       "fits": 1,
       "path": [
         "loader",
@@ -253,90 +237,82 @@
         "planner",
         "trainer",
         "trainer",
+        "trainer",
+        "trainer",
         "evaluator",
         "reporter"
       ],
       "retries": {
-        "trainer": 1
+        "trainer": 3
       },
-      "seconds": 0.2892730236053467,
-      "system": "adaptive_langgraph"
+      "seconds": 0.5535390377044678
     },
     "score": 1.0,
     "passed": true,
     "checks": {
       "completed": true,
-      "test_metric>=0.65": true,
-      "retried_trainer>=1": true
+      "holdout_f1>=0.7": true,
+      "fits<=3": true
     },
     "final_score": 1.0,
     "coordination_score": 1.0
   },
   {
-    "case": "T4_corrupt_features",
+    "case": "T4_bad_labels",
     "system": "airflow_fixed",
-    "result": {
-      "completed": true,
-      "model": "RandomForest(300)",
-      "metric_name": "accuracy",
-      "test_metric": 0.6354755784061696,
-      "fits": 1,
-      "path": [
-        "ingest",
-        "train",
-        "evaluate"
-      ],
-      "retries": {},
-      "seconds": 0.411329984664917,
-      "system": "airflow_fixed"
-    },
-    "score": 0.75,
-    "passed": false,
-    "checks": {
-      "completed": true,
-      "test_metric>=0.62": true,
-      "visited:cleaner": false
-    },
-    "final_score": 1.0,
-    "coordination_score": 0.0
-  },
-  {
-    "case": "T4_corrupt_features",
-    "system": "simple_loop",
     "result": {
       "completed": false,
       "fits": 0,
       "path": [
-        "DataAgent",
-        "FeatureAgent",
-        "TrainerAgent",
-        "EvaluatorAgent"
+        "validate_csv",
+        "profile_light",
+        "train_baseline"
       ],
       "retries": {},
-      "error": "Input X contains NaN.\nLogisticRegression does not accept missing values encoded as NaN natively. For supervised learning, you might want to consider sklearn.ensemble.HistGradientBoostingClassifier and Regressor which accept missing values encoded as NaNs natively. Alternatively, it is possible to preprocess the data, for instance by using an imputer transformer in a pipeline or drop samples with missing values. See https://scikit-learn.org/stable/modules/impute.html You can find a list of all estimators that handle NaN values at the following page: https://scikit-learn.org/stable/modules/impute.html#estimators-that-handle-nan-values",
-      "seconds": 0.04046368598937988,
-      "system": "simple_loop"
+      "error": "Input y contains NaN.",
+      "seconds": 0.0036878585815429688
+    },
+    "score": 0.25,
+    "passed": false,
+    "checks": {
+      "completed": false,
+      "holdout_f1>=0.65": false,
+      "no_crash": true
+    },
+    "final_score": 0.0,
+    "coordination_score": 1.0
+  },
+  {
+    "case": "T4_bad_labels",
+    "system": "class_simple_loop",
+    "result": {
+      "completed": false,
+      "fits": 0,
+      "path": [
+        "crash"
+      ],
+      "retries": {},
+      "error": "Input y contains NaN.",
+      "seconds": 0.011601686477661133
     },
     "score": 0.0,
     "passed": false,
     "checks": {
       "completed": false,
-      "test_metric>=0.62": false,
-      "visited:cleaner": false
+      "holdout_f1>=0.65": false,
+      "no_crash": false
     },
     "final_score": 0.0,
     "coordination_score": 0.0
   },
   {
-    "case": "T4_corrupt_features",
+    "case": "T4_bad_labels",
     "system": "adaptive_langgraph",
     "result": {
       "completed": true,
-      "model": "GradientBoosting",
-      "metric_name": "accuracy",
-      "test_metric": 0.6812339331619537,
-      "val_metric": 0.667866323907455,
-      "gap": 0.03165373094341917,
+      "model": "HGB",
+      "test_metric": 0.7301587301587301,
+      "val_metric": 0.7903225806451613,
       "fits": 1,
       "path": [
         "loader",
@@ -348,87 +324,176 @@
         "reporter"
       ],
       "retries": {},
-      "seconds": 0.3149261474609375,
-      "system": "adaptive_langgraph"
+      "seconds": 0.8981475830078125
     },
     "score": 1.0,
     "passed": true,
     "checks": {
       "completed": true,
-      "test_metric>=0.62": true,
-      "visited:cleaner": true
+      "holdout_f1>=0.65": true,
+      "no_crash": true
     },
     "final_score": 1.0,
     "coordination_score": 1.0
   },
   {
-    "case": "T5_imbalanced",
+    "case": "T5_missing_features",
     "system": "airflow_fixed",
     "result": {
       "completed": true,
-      "model": "RandomForest(300)",
-      "metric_name": "f1",
-      "test_metric": 0.3674540682414698,
+      "model": "logistic_regression",
+      "test_metric": 0.7123287671232876,
       "fits": 1,
       "path": [
-        "ingest",
-        "train",
-        "evaluate"
+        "validate_csv",
+        "profile_light",
+        "train_baseline",
+        "publish"
       ],
       "retries": {},
-      "seconds": 0.4264817237854004,
-      "system": "airflow_fixed"
+      "seconds": 0.22684907913208008
     },
-    "score": 0.375,
-    "passed": false,
+    "score": 1.0,
+    "passed": true,
     "checks": {
       "completed": true,
-      "test_metric>=0.4": false,
-      "planner_picked_f1": false
+      "holdout_f1>=0.65": true,
+      "no_unneeded_cleaning": true
     },
-    "final_score": 0.5,
-    "coordination_score": 0.0
+    "final_score": 1.0,
+    "coordination_score": 1.0
   },
   {
-    "case": "T5_imbalanced",
-    "system": "simple_loop",
+    "case": "T5_missing_features",
+    "system": "class_simple_loop",
     "result": {
       "completed": true,
-      "model": "LogisticRegression",
-      "metric_name": "f1",
-      "test_metric": 0.2538593481989708,
+      "model": "logistic_regression",
+      "test_metric": 0.7092198581560284,
       "fits": 1,
       "path": [
-        "DataAgent",
-        "FeatureAgent",
-        "TrainerAgent",
-        "EvaluatorAgent",
-        "ReporterAgent"
+        "data_scientist",
+        "hypothesis_generator",
+        "ml_engineer",
+        "judge",
+        "holdout_eval"
       ],
       "retries": {},
-      "seconds": 0.5966987609863281,
-      "system": "simple_loop"
+      "seconds": 0.28539419174194336
     },
-    "score": 0.375,
-    "passed": false,
+    "score": 1.0,
+    "passed": true,
     "checks": {
       "completed": true,
-      "test_metric>=0.4": false,
-      "planner_picked_f1": false
+      "holdout_f1>=0.65": true,
+      "no_unneeded_cleaning": true
     },
-    "final_score": 0.5,
-    "coordination_score": 0.0
+    "final_score": 1.0,
+    "coordination_score": 1.0
   },
   {
-    "case": "T5_imbalanced",
+    "case": "T5_missing_features",
     "system": "adaptive_langgraph",
     "result": {
       "completed": true,
-      "model": "LogisticRegression",
-      "metric_name": "f1",
-      "test_metric": 0.48089171974522293,
-      "val_metric": 0.49206349206349204,
-      "gap": -0.0029330572808833333,
+      "model": "HGB",
+      "test_metric": 0.7101449275362319,
+      "val_metric": 0.7703703703703704,
+      "fits": 1,
+      "path": [
+        "loader",
+        "validator",
+        "planner",
+        "trainer",
+        "evaluator",
+        "reporter"
+      ],
+      "retries": {},
+      "seconds": 0.8939268589019775
+    },
+    "score": 1.0,
+    "passed": true,
+    "checks": {
+      "completed": true,
+      "holdout_f1>=0.65": true,
+      "no_unneeded_cleaning": true
+    },
+    "final_score": 1.0,
+    "coordination_score": 1.0
+  },
+  {
+    "case": "T6_imbalanced",
+    "system": "airflow_fixed",
+    "result": {
+      "completed": true,
+      "model": "logistic_regression",
+      "test_metric": 0.2631578947368421,
+      "fits": 1,
+      "path": [
+        "validate_csv",
+        "profile_light",
+        "train_baseline",
+        "publish"
+      ],
+      "retries": {},
+      "seconds": 0.07583212852478027
+    },
+    "score": 1.0,
+    "passed": true,
+    "checks": {
+      "completed": true,
+      "holdout_f1>=0.25": true,
+      "fits<=3": true
+    },
+    "final_score": 1.0,
+    "coordination_score": 1.0
+  },
+  {
+    "case": "T6_imbalanced",
+    "system": "class_simple_loop",
+    "result": {
+      "completed": true,
+      "model": "logistic_regression",
+      "test_metric": 0.2631578947368421,
+      "fits": 3,
+      "path": [
+        "data_scientist",
+        "hypothesis_generator",
+        "ml_engineer",
+        "judge",
+        "memory_writer",
+        "context_builder",
+        "hypothesis_generator",
+        "ml_engineer",
+        "judge",
+        "memory_writer",
+        "context_builder",
+        "hypothesis_generator",
+        "ml_engineer",
+        "judge",
+        "holdout_eval"
+      ],
+      "retries": {},
+      "seconds": 0.18971824645996094
+    },
+    "score": 1.0,
+    "passed": true,
+    "checks": {
+      "completed": true,
+      "holdout_f1>=0.25": true,
+      "fits<=3": true
+    },
+    "final_score": 1.0,
+    "coordination_score": 1.0
+  },
+  {
+    "case": "T6_imbalanced",
+    "system": "adaptive_langgraph",
+    "result": {
+      "completed": true,
+      "model": "LogReg",
+      "test_metric": 0.2631578947368421,
+      "val_metric": 0.24390243902439024,
       "fits": 3,
       "path": [
         "loader",
@@ -445,196 +510,91 @@
         "reporter"
       ],
       "retries": {},
-      "seconds": 0.8486118316650391,
-      "system": "adaptive_langgraph"
+      "seconds": 1.129363775253296
     },
     "score": 1.0,
     "passed": true,
     "checks": {
       "completed": true,
-      "test_metric>=0.4": true,
-      "planner_picked_f1": true
-    },
-    "final_score": 1.0,
-    "coordination_score": 1.0
-  },
-  {
-    "case": "T6_budget",
-    "system": "airflow_fixed",
-    "result": {
-      "completed": true,
-      "model": "RandomForest(300)",
-      "metric_name": "accuracy",
-      "test_metric": 0.6426735218508998,
-      "fits": 1,
-      "path": [
-        "ingest",
-        "train",
-        "evaluate"
-      ],
-      "retries": {},
-      "seconds": 0.41710829734802246,
-      "system": "airflow_fixed"
-    },
-    "score": 0.625,
-    "passed": false,
-    "checks": {
-      "completed": true,
-      "test_metric>=0.65": false,
-      "fits<=2": true
-    },
-    "final_score": 0.5,
-    "coordination_score": 1.0
-  },
-  {
-    "case": "T6_budget",
-    "system": "simple_loop",
-    "result": {
-      "completed": true,
-      "model": "GradientBoosting",
-      "metric_name": "accuracy",
-      "test_metric": 0.6709511568123393,
-      "fits": 4,
-      "path": [
-        "DataAgent",
-        "FeatureAgent",
-        "TrainerAgent",
-        "EvaluatorAgent",
-        "TunerAgent",
-        "TrainerAgent",
-        "EvaluatorAgent",
-        "TunerAgent",
-        "TrainerAgent",
-        "EvaluatorAgent",
-        "TunerAgent",
-        "TrainerAgent",
-        "EvaluatorAgent",
-        "ReporterAgent"
-      ],
-      "retries": {},
-      "seconds": 0.990534782409668,
-      "system": "simple_loop"
-    },
-    "score": 0.75,
-    "passed": false,
-    "checks": {
-      "completed": true,
-      "test_metric>=0.65": true,
-      "fits<=2": false
-    },
-    "final_score": 1.0,
-    "coordination_score": 0.0
-  },
-  {
-    "case": "T6_budget",
-    "system": "adaptive_langgraph",
-    "result": {
-      "completed": true,
-      "model": "GradientBoosting",
-      "metric_name": "accuracy",
-      "test_metric": 0.6709511568123393,
-      "val_metric": 0.6760925449871465,
-      "gap": 0.032512185900752,
-      "fits": 2,
-      "path": [
-        "loader",
-        "validator",
-        "planner",
-        "trainer",
-        "evaluator",
-        "diagnostician",
-        "trainer",
-        "evaluator",
-        "reporter"
-      ],
-      "retries": {},
-      "seconds": 0.9226067066192627,
-      "system": "adaptive_langgraph"
-    },
-    "score": 1.0,
-    "passed": true,
-    "checks": {
-      "completed": true,
-      "test_metric>=0.65": true,
-      "fits<=2": true
-    },
-    "final_score": 1.0,
-    "coordination_score": 1.0
-  },
-  {
-    "case": "T7_small_data",
-    "system": "airflow_fixed",
-    "result": {
-      "completed": true,
-      "model": "RandomForest(300)",
-      "metric_name": "accuracy",
-      "test_metric": 0.5833333333333334,
-      "fits": 1,
-      "path": [
-        "ingest",
-        "train",
-        "evaluate"
-      ],
-      "retries": {},
-      "seconds": 0.23853850364685059,
-      "system": "airflow_fixed"
-    },
-    "score": 1.0,
-    "passed": true,
-    "checks": {
-      "completed": true,
-      "test_metric>=0.55": true,
+      "holdout_f1>=0.25": true,
       "fits<=3": true
     },
     "final_score": 1.0,
     "coordination_score": 1.0
   },
   {
-    "case": "T7_small_data",
-    "system": "simple_loop",
+    "case": "T7_tiny_data",
+    "system": "airflow_fixed",
     "result": {
       "completed": true,
-      "model": "RandomForest(300)",
-      "metric_name": "accuracy",
-      "test_metric": 0.5833333333333334,
+      "model": "logistic_regression",
+      "test_metric": 0.8,
+      "fits": 1,
+      "path": [
+        "validate_csv",
+        "profile_light",
+        "train_baseline",
+        "publish"
+      ],
+      "retries": {},
+      "seconds": 0.2168128490447998
+    },
+    "score": 1.0,
+    "passed": true,
+    "checks": {
+      "completed": true,
+      "holdout_f1>=0.7": true,
+      "fits<=3": true
+    },
+    "final_score": 1.0,
+    "coordination_score": 1.0
+  },
+  {
+    "case": "T7_tiny_data",
+    "system": "class_simple_loop",
+    "result": {
+      "completed": true,
+      "model": "logistic_regression",
+      "test_metric": 0.7272727272727273,
       "fits": 3,
       "path": [
-        "DataAgent",
-        "FeatureAgent",
-        "TrainerAgent",
-        "EvaluatorAgent",
-        "TunerAgent",
-        "TrainerAgent",
-        "EvaluatorAgent",
-        "TunerAgent",
-        "TrainerAgent",
-        "EvaluatorAgent",
-        "ReporterAgent"
+        "data_scientist",
+        "hypothesis_generator",
+        "ml_engineer",
+        "judge",
+        "memory_writer",
+        "context_builder",
+        "hypothesis_generator",
+        "ml_engineer",
+        "judge",
+        "memory_writer",
+        "context_builder",
+        "hypothesis_generator",
+        "ml_engineer",
+        "judge",
+        "holdout_eval"
       ],
       "retries": {},
-      "seconds": 0.33172607421875,
-      "system": "simple_loop"
+      "seconds": 0.3714253902435303
     },
     "score": 1.0,
     "passed": true,
     "checks": {
       "completed": true,
-      "test_metric>=0.55": true,
+      "holdout_f1>=0.7": true,
       "fits<=3": true
     },
     "final_score": 1.0,
     "coordination_score": 1.0
   },
   {
-    "case": "T7_small_data",
+    "case": "T7_tiny_data",
     "system": "adaptive_langgraph",
     "result": {
       "completed": true,
-      "model": "LogisticRegression",
-      "metric_name": "accuracy",
-      "test_metric": 0.5833333333333334,
-      "val_metric": 0.6,
-      "gap": 0.15000000000000002,
+      "model": "LogReg",
+      "test_metric": 0.8,
+      "val_metric": 0.5714285714285714,
       "fits": 3,
       "path": [
         "loader",
@@ -651,15 +611,99 @@
         "reporter"
       ],
       "retries": {},
-      "seconds": 0.03440141677856445,
-      "system": "adaptive_langgraph"
+      "seconds": 0.5989422798156738
     },
     "score": 1.0,
     "passed": true,
     "checks": {
       "completed": true,
-      "test_metric>=0.55": true,
+      "holdout_f1>=0.7": true,
       "fits<=3": true
+    },
+    "final_score": 1.0,
+    "coordination_score": 1.0
+  },
+  {
+    "case": "T8_tight_budget",
+    "system": "airflow_fixed",
+    "result": {
+      "completed": true,
+      "model": "logistic_regression",
+      "test_metric": 0.7375886524822695,
+      "fits": 1,
+      "path": [
+        "validate_csv",
+        "profile_light",
+        "train_baseline",
+        "publish"
+      ],
+      "retries": {},
+      "seconds": 0.4309122562408447
+    },
+    "score": 1.0,
+    "passed": true,
+    "checks": {
+      "completed": true,
+      "holdout_f1>=0.7": true,
+      "fits<=1": true
+    },
+    "final_score": 1.0,
+    "coordination_score": 1.0
+  },
+  {
+    "case": "T8_tight_budget",
+    "system": "class_simple_loop",
+    "result": {
+      "completed": true,
+      "model": "logistic_regression",
+      "test_metric": 0.7605633802816901,
+      "fits": 1,
+      "path": [
+        "data_scientist",
+        "hypothesis_generator",
+        "ml_engineer",
+        "judge",
+        "holdout_eval"
+      ],
+      "retries": {},
+      "seconds": 0.11955404281616211
+    },
+    "score": 1.0,
+    "passed": true,
+    "checks": {
+      "completed": true,
+      "holdout_f1>=0.7": true,
+      "fits<=1": true
+    },
+    "final_score": 1.0,
+    "coordination_score": 1.0
+  },
+  {
+    "case": "T8_tight_budget",
+    "system": "adaptive_langgraph",
+    "result": {
+      "completed": true,
+      "model": "HGB",
+      "test_metric": 0.7669172932330827,
+      "val_metric": 0.7846153846153846,
+      "fits": 1,
+      "path": [
+        "loader",
+        "validator",
+        "planner",
+        "trainer",
+        "evaluator",
+        "reporter"
+      ],
+      "retries": {},
+      "seconds": 0.8061423301696777
+    },
+    "score": 1.0,
+    "passed": true,
+    "checks": {
+      "completed": true,
+      "holdout_f1>=0.7": true,
+      "fits<=1": true
     },
     "final_score": 1.0,
     "coordination_score": 1.0

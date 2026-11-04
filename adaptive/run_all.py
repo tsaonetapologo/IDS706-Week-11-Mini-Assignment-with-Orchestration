@@ -11,12 +11,12 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import networkx as nx
 
-from adaptive import baselines, eval_suite, graph
+from adaptive import baselines, core, datasets, eval_suite, graph
 
 OUT = os.environ.get("OUTPUT_DIR", "output")
 SYSTEMS = {
     "airflow_fixed": baselines.run_airflow_fixed,
-    "simple_loop": baselines.run_simple_loop,
+    "class_simple_loop": baselines.run_class_loop,
     "adaptive_langgraph": graph.run_adaptive,
 }
 
@@ -57,11 +57,15 @@ def main():
     rows = []
     for case in eval_suite.CASES:
         for name, fn in SYSTEMS.items():
-            res = fn(dict(case.cfg))
+            ds, target = datasets.prepare(case.dataset)
+            cfg = {"dataset": ds, "target": target, "target_score": 0.7, "budget": 3,
+                   **{k: v for k, v in case.cfg.items() if k != "faults"}}
+            with core.inject_faults(case.cfg.get("faults")):
+                res = fn(cfg)
             sc = eval_suite.score_case(case, res)
             rows.append({"case": case.id, "system": name, "result": res, **sc})
             print(f"{case.id:22s} {name:20s} score={sc['score']:.2f} pass={sc['passed']} "
-                  f"metric={res.get('test_metric', float('nan')):.3f} fits={res['fits']} path={'>'.join(res['path'])}")
+                  f"f1={res.get('test_metric', float('nan')):.3f} fits={res['fits']} path={'>'.join(res['path'])}")
     json.dump(rows, open(f"{OUT}/eval_results.json", "w"), indent=2, default=str)
 
     systems = list(SYSTEMS)
@@ -97,9 +101,9 @@ def main():
     h.append("<h2>Test cases</h2><table><tr><th>ID</th><th>Input</th><th>Expected</th><th>Scoring (weight)</th><th>Pass threshold</th></tr>")
     for c in eval_suite.CASES:
         sc = ", ".join(f"{k.name} [{k.kind}, w={k.weight}]" for k in c.checks)
-        h.append(f"<tr><td>{c.id}</td><td>{html.escape(c.description)}<br><code>{html.escape(json.dumps(c.cfg))}</code></td>"
+        h.append(f"<tr><td>{c.id}</td><td>{html.escape(c.description)}<br><code>{html.escape(c.dataset + ' ' + json.dumps(c.cfg))}</code></td>"
                  f"<td>{html.escape(c.expected)}</td><td>{html.escape(sc)}</td><td>{c.pass_threshold}</td></tr>")
-    h.append("</table><h2>Results</h2><table><tr><th>Case</th><th>System</th><th>Score</th><th>Pass</th><th>Metric</th><th>Fits</th><th>Retries</th><th>Trace</th><th>Failed checks</th></tr>")
+    h.append("</table><h2>Results</h2><table><tr><th>Case</th><th>System</th><th>Score</th><th>Pass</th><th>Holdout F1</th><th>Fits</th><th>Retries</th><th>Trace</th><th>Failed checks</th></tr>")
     for r in rows:
         res = r["result"]
         failed = ", ".join(k for k, v in r["checks"].items() if not v) or "-"
