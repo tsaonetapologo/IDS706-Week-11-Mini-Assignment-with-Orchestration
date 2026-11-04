@@ -27,7 +27,9 @@ docker compose down                 # stop (add -v to wipe the database)
 
 The warehouse database is also exposed on `localhost:5433` (user/password `airflow`).
 
-**Dev container:** in VS Code run "Dev Containers: Reopen in Container" ([.devcontainer/devcontainer.json](.devcontainer/devcontainer.json)). It reuses the compose stack, mounts the repo at `/workspace` and forwards port 8080. I verified it headlessly with the official `@devcontainers/cli` (`devcontainer up` + `exec`: repo visible, `langgraph`/`sklearn` import, DAG listed). I did not click through the VS Code UI itself.
+**Dev container:** in VS Code run "Dev Containers: Reopen in Container" ([.devcontainer/devcontainer.json](.devcontainer/devcontainer.json)). It reuses the compose stack, mounts the repo at `/workspace` and forwards port 8080. I successfully opened it in VS Code with Docker Desktop:
+
+![VS Code dev container running with Docker Desktop](docs/Screenshot%202026-11-04%20at%2017.19.16.png)
 
 ---
 
