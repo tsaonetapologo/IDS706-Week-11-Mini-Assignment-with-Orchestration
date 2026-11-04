@@ -1,72 +1,77 @@
-# IDS706 Week 11 – Airflow Pipeline + Agent-Based ML Workflow
+# IDS706 Week 11 – Orchestration, Agent Workflows and an Adaptive Multi-Agent System
 
-End-to-end pipeline on the **MovieLens (ml-latest-small)** data: Airflow ingests, cleans, merges and loads into PostgreSQL, analyzes the result, and then an agent workflow with a train → evaluate → tune loop trains models on the cleaned table.
+I built an end-to-end data pipeline in Airflow, trained models on its output with an agent-based loop, and then (bonus) built an adaptive LangGraph multi-agent system that I evaluated against the two baselines from class.
 
-## Run it
+| Part | What I built | Where |
+|---|---|---|
+| 1 | Airflow DAG: ingest → parallel clean/transform → merge → PostgreSQL → analysis | [dags/](dags) |
+| 2 | Agent loop (train → evaluate → tune) on the cleaned table, with a live agent graph | [agents/](agents) |
+| 3 (bonus) | Adaptive LangGraph system, 8-case evaluation suite, dashboard, comparison with the class baselines | [adaptive/](adaptive) |
+
+## How to run it
 
 Requirements: Docker + Docker Compose.
 
 ```bash
 git clone --recurse-submodules https://github.com/tsaonetapologo/IDS706-Week-11-Mini-Assignment-with-Orchestration.git
-cd IDS706-Week-11-Mini-Assignment-with-Orchestration   # (submodule = class repo, only needed for Part 3)
-docker compose up -d --build          # Postgres + Airflow (webserver, scheduler)
-# UI: http://localhost:8080  (admin / admin); DAG "movielens_pipeline" is unpaused and scheduled @daily
-docker compose exec airflow-scheduler airflow dags trigger movielens_pipeline   # or use the UI
+cd IDS706-Week-11-Mini-Assignment-with-Orchestration      # the submodule (class repo) is only needed for Part 3
 
-# Part 2 (after the DAG has loaded the table):
-docker compose run --rm agents        # writes output/agent_graph.png and output/agent_results.json
-docker compose down                   # stop (add -v to wipe the database)
+docker compose up -d --build        # Postgres + Airflow webserver + scheduler
+# Airflow UI: http://localhost:8080 (admin / admin). The DAG "movielens_pipeline" is unpaused and scheduled @daily.
+docker compose exec airflow-scheduler airflow dags trigger movielens_pipeline    # or press play in the UI
+
+docker compose run --rm agents      # Part 2 (needs the DAG to have loaded the table) -> output/agent_graph.png, agent_results.json
+docker compose run --rm adaptive    # Part 3 -> output/dashboard.html, adaptive_graph.png, eval_results.json, adaptive_trace.jsonl
+docker compose down                 # stop (add -v to wipe the database)
 ```
 
-The warehouse DB (`warehouse`) is also exposed on `localhost:5433` (user/password `airflow`).
+The warehouse database is also exposed on `localhost:5433` (user/password `airflow`).
 
-**Dev container:** open the folder in VS Code → "Dev Containers: Reopen in Container" ([.devcontainer/devcontainer.json](.devcontainer/devcontainer.json)). It uses the same compose stack, attaches to the Airflow image with the repo mounted at `/workspace`, and forwards port 8080. I validated it headlessly with the official `@devcontainers/cli` (`devcontainer up` + `devcontainer exec`: repo visible, `langgraph`/`sklearn` import, `movielens_pipeline` DAG listed); I did not click through the VS Code UI. Inside it you can run the same `python -m agents.workflow` / `python -m adaptive.run_all` commands.
+**Dev container:** in VS Code run "Dev Containers: Reopen in Container" ([.devcontainer/devcontainer.json](.devcontainer/devcontainer.json)). It reuses the compose stack, mounts the repo at `/workspace` and forwards port 8080. I verified it headlessly with the official `@devcontainers/cli` (`devcontainer up` + `exec`: repo visible, `langgraph`/`sklearn` import, DAG listed). I did not click through the VS Code UI itself.
 
-**Layout:** `dags/` Part 1 · `agents/` Part 2 · `adaptive/` Part 3 · `third_party/automl-research-lab` class repo (submodule) · `docs/` screenshots and results.
+---
 
 ## Part 1 – Airflow pipeline
 
-**Data sources** (three related tables from GroupLens, downloaded in the `ingest` task): `movies.csv`, `ratings.csv` (100k ratings), `tags.csv`.
+**Data.** I used three related tables from the MovieLens `ml-latest-small` dataset (GroupLens): `movies.csv`, `ratings.csv` (100k ratings) and `tags.csv`. The `ingest` task downloads them.
 
 **Transformations** ([dags/etl.py](dags/etl.py)):
-- movies: drop duplicates/nulls, extract `year` from the title, normalise genres, impute missing year.
-- ratings: drop nulls/duplicates/out-of-range, aggregate per movie → `n_ratings`, `avg_rating`, `rating_std`.
-- tags: lowercase/trim/dedupe, aggregate per movie → `n_tags`, `n_unique_tags`.
-- Merge: movies ⨝ ratings_agg ⨝ tags_agg (left, missing tag counts = 0) → table `movie_summary` (9,724 rows) in PostgreSQL.
+- *movies*: drop duplicates/nulls, pull `year` out of the title, normalise genres, impute missing years.
+- *ratings*: drop nulls, duplicates and out-of-range values, then aggregate per movie (`n_ratings`, `avg_rating`, `rating_std`).
+- *tags*: lowercase/trim/dedupe, then aggregate per movie (`n_tags`, `n_unique_tags`).
+- *merge*: movies ⨝ ratings ⨝ tags (missing tag counts = 0) → table `movie_summary`, 9,724 rows, in PostgreSQL.
 
-**Structure** ([dags/movielens_pipeline.py](dags/movielens_pipeline.py)):
+**Pipeline structure** ([dags/movielens_pipeline.py](dags/movielens_pipeline.py)):
 
 ```
 ingest → [process_movies | process_ratings | process_tags] → merge_and_load_postgres → [analyze_visualization | analyze_model] → done
 ```
-Each `process_*` is a TaskGroup (`clean_*` → `transform_*`).
+Each `process_*` is a TaskGroup of `clean_*` → `transform_*`.
 
-**Scheduling & parallelism:** `schedule="@daily"`, `catchup=False`, LocalExecutor. The three TaskGroups are independent so they run concurrently after `ingest` (see overlapping start times in the run), and the two analysis tasks run in parallel after the load.
+**Scheduling and parallelism.** The DAG runs `@daily` (`catchup=False`, LocalExecutor). The three TaskGroups don't depend on each other, so they run concurrently after `ingest` (their start times overlap in the run), and the two analysis tasks run in parallel after the load.
 
-**Analysis** (reads from Postgres): bar chart of mean rating per genre ([docs/genre_avg_rating.png](docs/genre_avg_rating.png)) and a RandomForest predicting "highly rated" (`avg_rating ≥ 3.5`): **accuracy 0.641**; `year` and `n_ratings` are the most important features ([docs/airflow_model_results.txt](docs/airflow_model_results.txt)).
+**Analysis (reads from Postgres).** A bar chart of average rating by genre ([docs/genre_avg_rating.png](docs/genre_avg_rating.png)) and a RandomForest that predicts whether a movie is highly rated (`avg_rating ≥ 3.5`): **accuracy 0.641**, with `year` and `n_ratings` the most important features ([docs/airflow_model_results.txt](docs/airflow_model_results.txt)).
 
-Screenshots: [DAG runs/grid](docs/airflow_dag_runs_grid.png), [DAG graph (all tasks successful)](docs/airflow_dag_graph.png).
+Screenshots: [grid view of runs](docs/airflow_dag_runs_grid.png) and the graph view with every task successful:
 
-![graph](docs/airflow_dag_graph.png)
+![Airflow DAG graph](docs/airflow_dag_graph.png)
 
-## Part 2 – Agent workflow with a loop
+## Part 2 – Agent-based ML workflow with a loop
 
-Code: [agents/workflow.py](agents/workflow.py), live graph rendering in [agents/graph_viz.py](agents/graph_viz.py). Each agent is a node; the return value picks the next agent. The graph PNG (`output/agent_graph.png`) is re-rendered every time the active agent changes (orange = active, green = done).
+I used the in-class loop pattern (profile → plan → train → judge → loop) as my template and adapted it to the cleaned MovieLens table. The code is [agents/workflow.py](agents/workflow.py); each agent is a node and its return value chooses the next one. [agents/graph_viz.py](agents/graph_viz.py) re-renders `output/agent_graph.png` every time the active agent changes (orange = active, green = done). This is a regenerated image, not an interactive UI.
 
 | Agent | Role |
 |---|---|
 | DataAgent | Reads `movie_summary` from Postgres |
-| FeatureAgent | Builds features (year, counts, genre one-hot), train/val/test split |
+| FeatureAgent | Builds features (year, counts, genre one-hot) and a train/val/test split |
 | TrainerAgent | Trains the current candidate model |
-| EvaluatorAgent | Validation accuracy/F1; loops back or finishes |
-| TunerAgent | **Added** – picks next candidate when val accuracy < 0.80 |
-| ReporterAgent | Test-set evaluation of the best model, writes results |
+| EvaluatorAgent | Validation accuracy/F1; either loops or finishes |
+| **TunerAgent** (added) | Moves to the next candidate when validation accuracy is below the 0.80 target |
+| ReporterAgent | Scores the best model on the untouched test set and writes the results |
 
-![agent graph](docs/agent_graph.png)
+![Agent graph](docs/agent_graph.png)
 
-*Note:* this Part 2 loop is my own small implementation (plain-Python agent nodes + a re-rendered graph image), written without the class repo; it follows the class pattern (train → evaluate → loop) but is not a modification of the class `student_loop` code, and the graph is a regenerated PNG rather than a live UI.
-
-**Results** (target label: avg rating ≥ 3.5; full log in [docs/agent_run_log.txt](docs/agent_run_log.txt), [docs/agent_results.json](docs/agent_results.json)):
+**Results** ([log](docs/agent_run_log.txt), [JSON](docs/agent_results.json)). The label is "avg rating ≥ 3.5":
 
 | Model | Val accuracy | Val F1 |
 |---|---|---|
@@ -76,51 +81,83 @@ Code: [agents/workflow.py](agents/workflow.py), live graph rendering in [agents/
 | RandomForest(300) | 0.645 | 0.623 |
 | GradientBoosting | **0.676** | 0.655 |
 
-The 0.80 target was never reached, so the loop exhausted all candidates; the best model (GradientBoosting) scores **test accuracy 0.671, F1 0.655**.
-
-## Key findings
-- Predicting movie quality from metadata alone (year, popularity, genres) is hard: ~65–68% accuracy. Popularity (`n_ratings`) and release year carry most of the signal.
-- Gradient boosting beat the other models modestly; the agent loop makes comparing them automatic.
+The 0.80 target was never reached, so the loop tried every candidate. The best model, GradientBoosting, scores **test accuracy 0.671 and F1 0.655**. Metadata alone (year, popularity, genres) only gets me to about two-thirds accuracy, and popularity and release year carry most of the signal.
 
 ---
 
-## Part 3 (bonus) – Adaptive multi-agent system (LangGraph) + evaluation suite
+## Part 3 (bonus) – Adaptive multi-agent system with an evaluation suite
 
-The baselines are the **actual class code** ([Kedar-V/automl-research-lab](https://github.com/Kedar-V/automl-research-lab), pinned as a git submodule in `third_party/`), run unmodified:
-- **Fixed Airflow workflow** = the class DAG's steps from `mini_loop/baseline.py` (`validate_csv → profile_light → train_baseline`, one fixed logistic regression).
-- **Class simple agentic loop** = `mini_loop.graph.run_simple_loop` (data_scientist → hypothesis → ml_engineer → judge → … → holdout_eval). No API key was set, so its LLM nodes use the repo's heuristic fallbacks.
+I built a LangGraph `StateGraph` of eight agents with distinct jobs: **Loader, Validator, Cleaner, Planner, Trainer, Evaluator, Diagnostician, Reporter** ([adaptive/graph.py](adaptive/graph.py)). The workflow adapts while it runs, through conditional edges on intermediate results:
 
-```bash
-git clone --recurse-submodules <this repo>     # or: git submodule update --init
-docker compose build
-docker compose run --rm adaptive               # graph render + 8-case eval x 3 systems -> output/dashboard.html
-# optional LangSmith: LANGSMITH_TRACING=true LANGSMITH_API_KEY=... docker compose run --rm adaptive
-# always on: local per-node trace of the adaptive runs -> output/adaptive_trace.jsonl
-```
-Code: [adaptive/graph.py](adaptive/graph.py) (LangGraph `StateGraph`), [adaptive/baselines.py](adaptive/baselines.py) (adapters around the class code), [adaptive/eval_suite.py](adaptive/eval_suite.py), [adaptive/run_all.py](adaptive/run_all.py). Dashboard: [docs/dashboard.html](docs/dashboard.html) ([screenshot](docs/part3_dashboard.png)); Mermaid: [docs/adaptive_graph.mmd](docs/adaptive_graph.mmd).
+- **Retry:** Loader and Trainer failures are retried (up to 3 times), then the run exits gracefully.
+- **Route:** the Validator sends data through the Cleaner only when labels are missing.
+- **Select:** the Planner chooses the model queue from the data profile (tiny data → simple models; rare positives → balanced logistic regression first).
+- **Stop:** the Evaluator stops at the target score, the fit budget, or a plateau.
+- **Diagnose:** the Diagnostician reads the train–val gap and reorders the queue (overfit → simpler model, underfit → stronger model).
 
-![adaptive graph](docs/adaptive_graph.png)
+![Adaptive workflow graph](docs/adaptive_graph.png)
 
-**Agents & adaptivity.** Loader, Validator, Cleaner, Planner, Trainer, Evaluator, Diagnostician, Reporter. Conditional edges: bounded **retries** of Loader/Trainer (then graceful exit); Validator **routes** through Cleaner only if labels are missing; Planner **selects** the model queue from the data profile (tiny data → simple models; rare positives → balanced logistic regression first); Evaluator stops on target / fit budget / plateau; Diagnostician reads the train–val gap and re-orders the queue (overfit → simpler, underfit → stronger).
+**Dashboard:** [docs/dashboard.html](docs/dashboard.html) (open in a browser; [screenshot](docs/part3_dashboard.png)). It shows the graph, the summary, a chart, the test-case table and every run's trace. The Mermaid source is [docs/adaptive_graph.mmd](docs/adaptive_graph.mmd). `docker compose run --rm adaptive` regenerates all of it, and also writes a per-node trace to `output/adaptive_trace.jsonl`. LangSmith tracing turns on with `LANGSMITH_TRACING=true LANGSMITH_API_KEY=...`, but I haven't run that path, so it's untested.
 
-**Evaluation suite (8 cases).** Each case gives the input (dataset variant, injected faults, budget), expected behaviour, weighted checks and a pass threshold of 0.8 (full table in the dashboard). *Final* checks: completed, sealed-holdout F1. *Coordination* checks: fit budget, no crash, no unneeded cleaning step. All systems get the same CSV, the same model families/preprocessing (class `loop_runtime`) and the same holdout-F1 yardstick. Faults are injected at the `pandas.read_csv` / `sklearn Pipeline.fit` boundaries so the class code runs unmodified.
+**Evaluation suite** ([adaptive/eval_suite.py](adaptive/eval_suite.py)). I wrote 8 test cases. Each one specifies the input (dataset variant, injected faults, budget), the expected behaviour, weighted scoring checks and a pass threshold of 0.8:
 
-| Case | Airflow fixed | Class simple loop | Adaptive LangGraph |
+| Case | Input | Expected |
+|---|---|---|
+| T1 nominal | Clean Titanic data | F1 ≥ 0.70 in ≤ 3 fits |
+| T2 read outage | First 2 reads fail | recovers, F1 ≥ 0.70 |
+| T3 flaky trainer | First 3 fits crash | recovers, F1 ≥ 0.70 |
+| T4 bad labels | 6% of labels missing | drops them, F1 ≥ 0.65 |
+| T5 missing features | 15% NaNs in 3 columns | F1 ≥ 0.65, no wasted cleaning step |
+| T6 imbalanced | Churn data, about 10% positives | F1 ≥ 0.25 in ≤ 3 fits |
+| T7 tiny data | 60 rows | F1 ≥ 0.70 in ≤ 3 fits |
+| T8 tight budget | 1 fit allowed, unreachable target | ≤ 1 fit, F1 ≥ 0.70 |
+
+*Final* checks score the output (completed, holdout F1). *Coordination* checks score the behaviour (fit budget, no crash, no unneeded step). All three systems get the same CSV, the same model families and preprocessing, and the same holdout-F1 yardstick.
+
+### Short summary: my system vs. the two class baselines
+
+The baselines are the **actual class code** from [Kedar-V/automl-research-lab](https://github.com/Kedar-V/automl-research-lab), pinned as a submodule in `third_party/` and run unmodified ([adaptive/baselines.py](adaptive/baselines.py)). I injected faults at the `pandas.read_csv` and sklearn `Pipeline.fit` boundaries so the class code needed no edits.
+
+- **Fixed Airflow workflow** = the class DAG's steps (`validate_csv → profile_light → train_baseline`, one fixed logistic regression).
+- **Class simple agentic loop** = `run_simple_loop` (data_scientist → hypothesis → ml_engineer → judge → … → holdout_eval). No API key was set, so its LLM nodes used the repo's heuristic fallbacks.
+
+| Case | Airflow fixed | Class loop | Mine (adaptive) |
 |---|---|---|---|
-| T1 nominal (Titanic) F1 | 0.738 ✅ | 0.761 ✅ | 0.767 ✅ |
-| T2 read outage (2 failures) | ❌ crash | ❌ crash | 0.767 ✅ |
-| T3 flaky trainer (3 crashes) | ❌ | 0.735 ✅ (own repair step) | 0.767 ✅ |
-| T4 6% missing labels | ❌ | ❌ crash | 0.730 ✅ |
-| T5 missing features (control) | 0.712 ✅ | 0.709 ✅ | 0.710 ✅ |
-| T6 imbalanced (churn) | 0.263 ✅ | 0.263 ✅ | 0.263 ✅ |
-| T7 tiny data (60 rows) | 0.800 ✅ | 0.727 ✅ | 0.800 ✅ |
+| T1 nominal (holdout F1) | 0.738 ✅ | 0.761 ✅ | 0.767 ✅ |
+| T2 read outage | ❌ crash | ❌ crash | 0.767 ✅ |
+| T3 flaky trainer | ❌ | 0.735 ✅ (its repair step) | 0.767 ✅ |
+| T4 missing labels | ❌ | ❌ crash | 0.730 ✅ |
+| T5 missing features | 0.712 ✅ | 0.709 ✅ | 0.710 ✅ |
+| T6 imbalanced | 0.263 ✅ | 0.263 ✅ | 0.263 ✅ |
+| T7 tiny data | 0.800 ✅ | 0.727 ✅ | 0.800 ✅ |
 | T8 budget = 1 fit | 0.738 ✅ | 0.761 ✅ | 0.767 ✅ |
-| **Cases passed** | 5/8 | 6/8 | **8/8** |
+| **Passed** | 5/8 | 6/8 | **8/8** |
 | Mean case score | 0.72 | 0.78 | 1.00 |
 
-**Comparison summary**
-- *Fixed Airflow workflow:* cheapest and fully deterministic (always 1 fit) and fine on clean/small data, but any fault or bad label kills the run; no model search or recovery.
-- *Class simple loop:* adds model search and a judge, and it self-repairs a crashing fit (T3), but it has no data validation or load retry, so it crashed on a read failure and on missing labels. It is the most expensive on small data (3 fits for a worse F1 than the fixed baseline on T7).
-- *Adaptive graph:* the only system to pass all cases; the gains come from robustness (retry, label cleaning) rather than better models – on clean data (T1, T5, T6, T8) all three are within ~0.03 F1 of each other, and T6 is a three-way tie. It uses more fits than the fixed workflow on T6/T7 (3 vs 1).
+- **Fixed Airflow workflow:** cheapest and deterministic (always 1 fit), and fine on clean data. But any fault or bad label kills the run, and it has no model search or recovery.
+- **Class loop:** it adds model search and a judge, and it can repair a crashing fit (T3). It has no data validation and no load retry, so it crashed on the read outage and on missing labels. On tiny data it spent 3 fits to get a worse F1 than the fixed baseline.
+- **My adaptive graph:** the only system that passed every case. Its advantage is robustness (retries, label cleaning), not better models: on clean data all three land within about 0.03 F1, and T6 is a three-way tie. It also costs more (3 fits vs 1 on T6 and T7).
 
-**Caveats.** (1) The agents are deterministic rule-based policies, not LLM-driven. Tracing: a local JSONL tracer (`adaptive_trace.jsonl`, node start/end/error with timings) is always on and was run; LangSmith export is enabled by the env vars above but I did **not** run it (no API key), so that path is untested. (2) The test cases and thresholds are mine, and the faults are ones the adaptive system was built to handle, so the 8/8 is partly by construction; the clean-data cases show the honest parity. (3) After a first run showed my planner scored 0.0 F1 on the imbalanced data (trees first), I changed it to try balanced logistic regression first – i.e. one planner rule was adjusted after seeing a test result. (4) Single seed/split, small datasets (≤891 rows): differences of a few F1 points are noise. (5) Airflow's "coordination" score is inflated on failed runs because 0 fits trivially satisfies the fit-budget check; the *final* checks capture those failures. (6) The Airflow baseline is the class DAG's task functions run directly (not a live Airflow scheduler) so faults can be injected identically.
+**Limits I want to be upfront about.**
+1. The agents are rule-based policies, not LLM-driven.
+2. I wrote the test cases and chose the thresholds, and the faults are ones my system was designed to handle, so 8/8 is partly by construction. The clean-data cases show the honest parity.
+3. After my first run scored 0.0 F1 on the imbalanced data, I changed the planner to try balanced logistic regression first. That is one rule tuned after seeing a test result.
+4. Datasets are small (≤ 891 rows) with a single seed and split, so differences of a few F1 points are noise.
+5. The Airflow baseline's coordination score is inflated on failed runs (0 fits trivially satisfies the budget check). The final checks capture those failures.
+6. The Airflow baseline runs the class DAG's task functions directly, not through a live scheduler, so faults could be injected identically.
+
+---
+
+## Challenges I ran into (and how I fixed them)
+
+1. **Data lost between Airflow tasks.** My first `clean_*` functions returned DataFrames, but Airflow tasks run as separate processes, so the transform tasks had nothing to read. I made each clean step write a staged CSV and each transform step read it back, so the TaskGroups became properly independent.
+2. **Docker Compose wouldn't start.** I got "refers to undefined volume pgdata" because I had forgotten the top-level `volumes:` block. I also keep the pipeline's data in a separate `warehouse` database, created by an init script, so it doesn't mix with Airflow's metadata DB.
+3. **A silent `sed` failure skewed my first comparison.** On macOS my `sed -i` edit failed without stopping the script, so the baselines were scored with a different metric than my system on the imbalanced case. I only noticed because the numbers looked too good. I fixed the code and re-ran everything.
+4. **I first compared against baselines I had invented.** Before I had the class repo, I wrote my own "fixed workflow" and "simple loop". Once I got the real repo, I rebuilt the comparison around the actual class code (as a submodule) and re-ran it. Some results changed: the class loop turned out to repair crashed fits, so I couldn't claim it fails there.
+5. **My planner failed on imbalanced data.** It scored 0.0 F1 on the churn data because it put overfit-prone trees first. I fixed it by trying balanced logistic regression first, and I noted this in the limits because it's tuning against a test.
+6. **Unfair coordination checks.** I had a check that required a specific "retry" behaviour, which penalised the class loop for recovering a different way. I replaced it with outcome-based checks (completed, within the fit budget).
+7. **A stale dashboard screenshot.** I pushed a screenshot from the previous version of the dashboard. I caught it when I viewed the image, re-rendered it, and now check the screenshot's content before committing.
+
+## Key takeaway
+
+Orchestration and agents solve different problems. Airflow gave me reliable, repeatable, parallel data plumbing, but it only runs the steps I wrote down in advance. The agent graph earns its extra complexity only when the *path* has to change at runtime. In my results, the adaptive system didn't build better models. It survived failures and bad data that stopped the fixed workflows. The most important lesson was about evaluation: it was only because I wrote test cases with explicit inputs, thresholds and a shared metric that I caught my own mistakes (the silent `sed` failure, the unfair checks, the planner's 0.0 F1) and could make an honest comparison.
