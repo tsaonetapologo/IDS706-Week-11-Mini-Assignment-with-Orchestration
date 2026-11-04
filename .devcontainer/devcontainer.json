@@ -1,0 +1,13 @@
+{
+  "name": "IDS706 Airflow + Agents",
+  "dockerComposeFile": ["../docker-compose.yml"],
+  "service": "airflow-webserver",
+  "workspaceFolder": "/opt/airflow",
+  "shutdownAction": "stopCompose",
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-python.python"]
+    }
+  },
+  "forwardPorts": [8080]
+}

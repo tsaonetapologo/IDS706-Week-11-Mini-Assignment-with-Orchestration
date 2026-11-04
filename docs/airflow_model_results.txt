@@ -1,0 +1,13 @@
+RandomForest accuracy (avg_rating>=3.5): 0.6411
+Top features:
+year           0.403698
+n_ratings      0.212004
+n_tags         0.052251
+Drama          0.038174
+Comedy         0.027168
+Romance        0.022564
+Documentary    0.022334
+Action         0.022284
+Thriller       0.021805
+Crime          0.020401
+dtype: float64

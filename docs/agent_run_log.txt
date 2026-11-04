@@ -1,0 +1,17 @@
+[DataAgent] loaded 9724 rows from Postgres
+[FeatureAgent] 23 features; train/val/test = 5834/1945/1945
+[TrainerAgent] trained LogisticRegression
+[EvaluatorAgent] LogisticRegression: val_acc=0.6488 val_f1=0.6191
+[TunerAgent] below target 0.8; next candidate: DecisionTree(depth=5)
+[TrainerAgent] trained DecisionTree(depth=5)
+[EvaluatorAgent] DecisionTree(depth=5): val_acc=0.6391 val_f1=0.6363
+[TunerAgent] below target 0.8; next candidate: RandomForest(50)
+[TrainerAgent] trained RandomForest(50)
+[EvaluatorAgent] RandomForest(50): val_acc=0.6442 val_f1=0.6202
+[TunerAgent] below target 0.8; next candidate: RandomForest(300)
+[TrainerAgent] trained RandomForest(300)
+[EvaluatorAgent] RandomForest(300): val_acc=0.6447 val_f1=0.6234
+[TunerAgent] below target 0.8; next candidate: GradientBoosting
+[TrainerAgent] trained GradientBoosting
+[EvaluatorAgent] GradientBoosting: val_acc=0.6761 val_f1=0.6546
+[ReporterAgent] best=GradientBoosting TEST accuracy=0.6710 f1=0.6548
