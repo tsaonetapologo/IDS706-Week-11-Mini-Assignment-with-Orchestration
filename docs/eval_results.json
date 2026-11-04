@@ -1,0 +1,667 @@
+[
+  {
+    "case": "T1_nominal",
+    "system": "airflow_fixed",
+    "result": {
+      "completed": true,
+      "model": "RandomForest(300)",
+      "metric_name": "accuracy",
+      "test_metric": 0.6426735218508998,
+      "fits": 1,
+      "path": [
+        "ingest",
+        "train",
+        "evaluate"
+      ],
+      "retries": {},
+      "seconds": 0.42867016792297363,
+      "system": "airflow_fixed"
+    },
+    "score": 0.625,
+    "passed": false,
+    "checks": {
+      "completed": true,
+      "test_metric>=0.65": false,
+      "fits<=3": true
+    },
+    "final_score": 0.5,
+    "coordination_score": 1.0
+  },
+  {
+    "case": "T1_nominal",
+    "system": "simple_loop",
+    "result": {
+      "completed": true,
+      "model": "GradientBoosting",
+      "metric_name": "accuracy",
+      "test_metric": 0.6709511568123393,
+      "fits": 4,
+      "path": [
+        "DataAgent",
+        "FeatureAgent",
+        "TrainerAgent",
+        "EvaluatorAgent",
+        "TunerAgent",
+        "TrainerAgent",
+        "EvaluatorAgent",
+        "TunerAgent",
+        "TrainerAgent",
+        "EvaluatorAgent",
+        "TunerAgent",
+        "TrainerAgent",
+        "EvaluatorAgent",
+        "ReporterAgent"
+      ],
+      "retries": {},
+      "seconds": 0.9875040054321289,
+      "system": "simple_loop"
+    },
+    "score": 0.75,
+    "passed": false,
+    "checks": {
+      "completed": true,
+      "test_metric>=0.65": true,
+      "fits<=3": false
+    },
+    "final_score": 1.0,
+    "coordination_score": 0.0
+  },
+  {
+    "case": "T1_nominal",
+    "system": "adaptive_langgraph",
+    "result": {
+      "completed": true,
+      "model": "GradientBoosting",
+      "metric_name": "accuracy",
+      "test_metric": 0.6709511568123393,
+      "val_metric": 0.6760925449871465,
+      "gap": 0.032512185900752,
+      "fits": 1,
+      "path": [
+        "loader",
+        "validator",
+        "planner",
+        "trainer",
+        "evaluator",
+        "reporter"
+      ],
+      "retries": {},
+      "seconds": 0.25699877738952637,
+      "system": "adaptive_langgraph"
+    },
+    "score": 1.0,
+    "passed": true,
+    "checks": {
+      "completed": true,
+      "test_metric>=0.65": true,
+      "fits<=3": true
+    },
+    "final_score": 1.0,
+    "coordination_score": 1.0
+  },
+  {
+    "case": "T2_db_outage",
+    "system": "airflow_fixed",
+    "result": {
+      "completed": false,
+      "fits": 0,
+      "path": [
+        "ingest"
+      ],
+      "retries": {},
+      "error": "injected db_fail failure",
+      "seconds": 6.9141387939453125e-06,
+      "system": "airflow_fixed"
+    },
+    "score": 0.0,
+    "passed": false,
+    "checks": {
+      "completed": false,
+      "test_metric>=0.65": false,
+      "retried_loader>=2": false
+    },
+    "final_score": 0.0,
+    "coordination_score": 0.0
+  },
+  {
+    "case": "T2_db_outage",
+    "system": "simple_loop",
+    "result": {
+      "completed": false,
+      "fits": 0,
+      "path": [
+        "DataAgent"
+      ],
+      "retries": {},
+      "error": "injected db_fail failure",
+      "seconds": 2.86102294921875e-06,
+      "system": "simple_loop"
+    },
+    "score": 0.0,
+    "passed": false,
+    "checks": {
+      "completed": false,
+      "test_metric>=0.65": false,
+      "retried_loader>=2": false
+    },
+    "final_score": 0.0,
+    "coordination_score": 0.0
+  },
+  {
+    "case": "T2_db_outage",
+    "system": "adaptive_langgraph",
+    "result": {
+      "completed": true,
+      "model": "GradientBoosting",
+      "metric_name": "accuracy",
+      "test_metric": 0.6709511568123393,
+      "val_metric": 0.6760925449871465,
+      "gap": 0.032512185900752,
+      "fits": 1,
+      "path": [
+        "loader",
+        "loader",
+        "loader",
+        "validator",
+        "planner",
+        "trainer",
+        "evaluator",
+        "reporter"
+      ],
+      "retries": {
+        "loader": 2
+      },
+      "seconds": 0.2556440830230713,
+      "system": "adaptive_langgraph"
+    },
+    "score": 1.0,
+    "passed": true,
+    "checks": {
+      "completed": true,
+      "test_metric>=0.65": true,
+      "retried_loader>=2": true
+    },
+    "final_score": 1.0,
+    "coordination_score": 1.0
+  },
+  {
+    "case": "T3_trainer_crash",
+    "system": "airflow_fixed",
+    "result": {
+      "completed": false,
+      "fits": 0,
+      "path": [
+        "ingest",
+        "train"
+      ],
+      "retries": {},
+      "error": "injected train_fail failure",
+      "seconds": 0.08739852905273438,
+      "system": "airflow_fixed"
+    },
+    "score": 0.0,
+    "passed": false,
+    "checks": {
+      "completed": false,
+      "test_metric>=0.65": false,
+      "retried_trainer>=1": false
+    },
+    "final_score": 0.0,
+    "coordination_score": 0.0
+  },
+  {
+    "case": "T3_trainer_crash",
+    "system": "simple_loop",
+    "result": {
+      "completed": false,
+      "fits": 0,
+      "path": [
+        "DataAgent",
+        "FeatureAgent",
+        "TrainerAgent",
+        "EvaluatorAgent"
+      ],
+      "retries": {},
+      "error": "injected train_fail failure",
+      "seconds": 0.037535905838012695,
+      "system": "simple_loop"
+    },
+    "score": 0.0,
+    "passed": false,
+    "checks": {
+      "completed": false,
+      "test_metric>=0.65": false,
+      "retried_trainer>=1": false
+    },
+    "final_score": 0.0,
+    "coordination_score": 0.0
+  },
+  {
+    "case": "T3_trainer_crash",
+    "system": "adaptive_langgraph",
+    "result": {
+      "completed": true,
+      "model": "GradientBoosting",
+      "metric_name": "accuracy",
+      "test_metric": 0.6709511568123393,
+      "val_metric": 0.6760925449871465,
+      "gap": 0.032512185900752,
+      "fits": 1,
+      "path": [
+        "loader",
+        "validator",
+        "planner",
+        "trainer",
+        "trainer",
+        "evaluator",
+        "reporter"
+      ],
+      "retries": {
+        "trainer": 1
+      },
+      "seconds": 0.2892730236053467,
+      "system": "adaptive_langgraph"
+    },
+    "score": 1.0,
+    "passed": true,
+    "checks": {
+      "completed": true,
+      "test_metric>=0.65": true,
+      "retried_trainer>=1": true
+    },
+    "final_score": 1.0,
+    "coordination_score": 1.0
+  },
+  {
+    "case": "T4_corrupt_features",
+    "system": "airflow_fixed",
+    "result": {
+      "completed": true,
+      "model": "RandomForest(300)",
+      "metric_name": "accuracy",
+      "test_metric": 0.6354755784061696,
+      "fits": 1,
+      "path": [
+        "ingest",
+        "train",
+        "evaluate"
+      ],
+      "retries": {},
+      "seconds": 0.411329984664917,
+      "system": "airflow_fixed"
+    },
+    "score": 0.75,
+    "passed": false,
+    "checks": {
+      "completed": true,
+      "test_metric>=0.62": true,
+      "visited:cleaner": false
+    },
+    "final_score": 1.0,
+    "coordination_score": 0.0
+  },
+  {
+    "case": "T4_corrupt_features",
+    "system": "simple_loop",
+    "result": {
+      "completed": false,
+      "fits": 0,
+      "path": [
+        "DataAgent",
+        "FeatureAgent",
+        "TrainerAgent",
+        "EvaluatorAgent"
+      ],
+      "retries": {},
+      "error": "Input X contains NaN.\nLogisticRegression does not accept missing values encoded as NaN natively. For supervised learning, you might want to consider sklearn.ensemble.HistGradientBoostingClassifier and Regressor which accept missing values encoded as NaNs natively. Alternatively, it is possible to preprocess the data, for instance by using an imputer transformer in a pipeline or drop samples with missing values. See https://scikit-learn.org/stable/modules/impute.html You can find a list of all estimators that handle NaN values at the following page: https://scikit-learn.org/stable/modules/impute.html#estimators-that-handle-nan-values",
+      "seconds": 0.04046368598937988,
+      "system": "simple_loop"
+    },
+    "score": 0.0,
+    "passed": false,
+    "checks": {
+      "completed": false,
+      "test_metric>=0.62": false,
+      "visited:cleaner": false
+    },
+    "final_score": 0.0,
+    "coordination_score": 0.0
+  },
+  {
+    "case": "T4_corrupt_features",
+    "system": "adaptive_langgraph",
+    "result": {
+      "completed": true,
+      "model": "GradientBoosting",
+      "metric_name": "accuracy",
+      "test_metric": 0.6812339331619537,
+      "val_metric": 0.667866323907455,
+      "gap": 0.03165373094341917,
+      "fits": 1,
+      "path": [
+        "loader",
+        "validator",
+        "cleaner",
+        "planner",
+        "trainer",
+        "evaluator",
+        "reporter"
+      ],
+      "retries": {},
+      "seconds": 0.3149261474609375,
+      "system": "adaptive_langgraph"
+    },
+    "score": 1.0,
+    "passed": true,
+    "checks": {
+      "completed": true,
+      "test_metric>=0.62": true,
+      "visited:cleaner": true
+    },
+    "final_score": 1.0,
+    "coordination_score": 1.0
+  },
+  {
+    "case": "T5_imbalanced",
+    "system": "airflow_fixed",
+    "result": {
+      "completed": true,
+      "model": "RandomForest(300)",
+      "metric_name": "f1",
+      "test_metric": 0.3674540682414698,
+      "fits": 1,
+      "path": [
+        "ingest",
+        "train",
+        "evaluate"
+      ],
+      "retries": {},
+      "seconds": 0.4264817237854004,
+      "system": "airflow_fixed"
+    },
+    "score": 0.375,
+    "passed": false,
+    "checks": {
+      "completed": true,
+      "test_metric>=0.4": false,
+      "planner_picked_f1": false
+    },
+    "final_score": 0.5,
+    "coordination_score": 0.0
+  },
+  {
+    "case": "T5_imbalanced",
+    "system": "simple_loop",
+    "result": {
+      "completed": true,
+      "model": "LogisticRegression",
+      "metric_name": "f1",
+      "test_metric": 0.2538593481989708,
+      "fits": 1,
+      "path": [
+        "DataAgent",
+        "FeatureAgent",
+        "TrainerAgent",
+        "EvaluatorAgent",
+        "ReporterAgent"
+      ],
+      "retries": {},
+      "seconds": 0.5966987609863281,
+      "system": "simple_loop"
+    },
+    "score": 0.375,
+    "passed": false,
+    "checks": {
+      "completed": true,
+      "test_metric>=0.4": false,
+      "planner_picked_f1": false
+    },
+    "final_score": 0.5,
+    "coordination_score": 0.0
+  },
+  {
+    "case": "T5_imbalanced",
+    "system": "adaptive_langgraph",
+    "result": {
+      "completed": true,
+      "model": "LogisticRegression",
+      "metric_name": "f1",
+      "test_metric": 0.48089171974522293,
+      "val_metric": 0.49206349206349204,
+      "gap": -0.0029330572808833333,
+      "fits": 3,
+      "path": [
+        "loader",
+        "validator",
+        "planner",
+        "trainer",
+        "evaluator",
+        "diagnostician",
+        "trainer",
+        "evaluator",
+        "diagnostician",
+        "trainer",
+        "evaluator",
+        "reporter"
+      ],
+      "retries": {},
+      "seconds": 0.8486118316650391,
+      "system": "adaptive_langgraph"
+    },
+    "score": 1.0,
+    "passed": true,
+    "checks": {
+      "completed": true,
+      "test_metric>=0.4": true,
+      "planner_picked_f1": true
+    },
+    "final_score": 1.0,
+    "coordination_score": 1.0
+  },
+  {
+    "case": "T6_budget",
+    "system": "airflow_fixed",
+    "result": {
+      "completed": true,
+      "model": "RandomForest(300)",
+      "metric_name": "accuracy",
+      "test_metric": 0.6426735218508998,
+      "fits": 1,
+      "path": [
+        "ingest",
+        "train",
+        "evaluate"
+      ],
+      "retries": {},
+      "seconds": 0.41710829734802246,
+      "system": "airflow_fixed"
+    },
+    "score": 0.625,
+    "passed": false,
+    "checks": {
+      "completed": true,
+      "test_metric>=0.65": false,
+      "fits<=2": true
+    },
+    "final_score": 0.5,
+    "coordination_score": 1.0
+  },
+  {
+    "case": "T6_budget",
+    "system": "simple_loop",
+    "result": {
+      "completed": true,
+      "model": "GradientBoosting",
+      "metric_name": "accuracy",
+      "test_metric": 0.6709511568123393,
+      "fits": 4,
+      "path": [
+        "DataAgent",
+        "FeatureAgent",
+        "TrainerAgent",
+        "EvaluatorAgent",
+        "TunerAgent",
+        "TrainerAgent",
+        "EvaluatorAgent",
+        "TunerAgent",
+        "TrainerAgent",
+        "EvaluatorAgent",
+        "TunerAgent",
+        "TrainerAgent",
+        "EvaluatorAgent",
+        "ReporterAgent"
+      ],
+      "retries": {},
+      "seconds": 0.990534782409668,
+      "system": "simple_loop"
+    },
+    "score": 0.75,
+    "passed": false,
+    "checks": {
+      "completed": true,
+      "test_metric>=0.65": true,
+      "fits<=2": false
+    },
+    "final_score": 1.0,
+    "coordination_score": 0.0
+  },
+  {
+    "case": "T6_budget",
+    "system": "adaptive_langgraph",
+    "result": {
+      "completed": true,
+      "model": "GradientBoosting",
+      "metric_name": "accuracy",
+      "test_metric": 0.6709511568123393,
+      "val_metric": 0.6760925449871465,
+      "gap": 0.032512185900752,
+      "fits": 2,
+      "path": [
+        "loader",
+        "validator",
+        "planner",
+        "trainer",
+        "evaluator",
+        "diagnostician",
+        "trainer",
+        "evaluator",
+        "reporter"
+      ],
+      "retries": {},
+      "seconds": 0.9226067066192627,
+      "system": "adaptive_langgraph"
+    },
+    "score": 1.0,
+    "passed": true,
+    "checks": {
+      "completed": true,
+      "test_metric>=0.65": true,
+      "fits<=2": true
+    },
+    "final_score": 1.0,
+    "coordination_score": 1.0
+  },
+  {
+    "case": "T7_small_data",
+    "system": "airflow_fixed",
+    "result": {
+      "completed": true,
+      "model": "RandomForest(300)",
+      "metric_name": "accuracy",
+      "test_metric": 0.5833333333333334,
+      "fits": 1,
+      "path": [
+        "ingest",
+        "train",
+        "evaluate"
+      ],
+      "retries": {},
+      "seconds": 0.23853850364685059,
+      "system": "airflow_fixed"
+    },
+    "score": 1.0,
+    "passed": true,
+    "checks": {
+      "completed": true,
+      "test_metric>=0.55": true,
+      "fits<=3": true
+    },
+    "final_score": 1.0,
+    "coordination_score": 1.0
+  },
+  {
+    "case": "T7_small_data",
+    "system": "simple_loop",
+    "result": {
+      "completed": true,
+      "model": "RandomForest(300)",
+      "metric_name": "accuracy",
+      "test_metric": 0.5833333333333334,
+      "fits": 3,
+      "path": [
+        "DataAgent",
+        "FeatureAgent",
+        "TrainerAgent",
+        "EvaluatorAgent",
+        "TunerAgent",
+        "TrainerAgent",
+        "EvaluatorAgent",
+        "TunerAgent",
+        "TrainerAgent",
+        "EvaluatorAgent",
+        "ReporterAgent"
+      ],
+      "retries": {},
+      "seconds": 0.33172607421875,
+      "system": "simple_loop"
+    },
+    "score": 1.0,
+    "passed": true,
+    "checks": {
+      "completed": true,
+      "test_metric>=0.55": true,
+      "fits<=3": true
+    },
+    "final_score": 1.0,
+    "coordination_score": 1.0
+  },
+  {
+    "case": "T7_small_data",
+    "system": "adaptive_langgraph",
+    "result": {
+      "completed": true,
+      "model": "LogisticRegression",
+      "metric_name": "accuracy",
+      "test_metric": 0.5833333333333334,
+      "val_metric": 0.6,
+      "gap": 0.15000000000000002,
+      "fits": 3,
+      "path": [
+        "loader",
+        "validator",
+        "planner",
+        "trainer",
+        "evaluator",
+        "diagnostician",
+        "trainer",
+        "evaluator",
+        "diagnostician",
+        "trainer",
+        "evaluator",
+        "reporter"
+      ],
+      "retries": {},
+      "seconds": 0.03440141677856445,
+      "system": "adaptive_langgraph"
+    },
+    "score": 1.0,
+    "passed": true,
+    "checks": {
+      "completed": true,
+      "test_metric>=0.55": true,
+      "fits<=3": true
+    },
+    "final_score": 1.0,
+    "coordination_score": 1.0
+  }
+]

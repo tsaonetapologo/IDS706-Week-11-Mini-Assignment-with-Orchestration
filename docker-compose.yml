@@ -9,11 +9,15 @@ x-airflow-common: &airflow-common
     WAREHOUSE_URL: postgresql+psycopg2://airflow:airflow@postgres:5432/warehouse
     DATA_DIR: /opt/airflow/data
     OUTPUT_DIR: /opt/airflow/output
+    LANGSMITH_TRACING: ${LANGSMITH_TRACING:-false}
+    LANGSMITH_API_KEY: ${LANGSMITH_API_KEY:-}
+    LANGSMITH_PROJECT: ids706-adaptive-agents
   volumes:
     - ./dags:/opt/airflow/dags
     - ./data:/opt/airflow/data
     - ./output:/opt/airflow/output
     - ./agents:/opt/airflow/agents
+    - ./adaptive:/opt/airflow/adaptive
   depends_on:
     postgres:
       condition: service_healthy
@@ -63,6 +67,12 @@ services:
     profiles: ["agents"]
     working_dir: /opt/airflow
     command: python -m agents.workflow
+  # Part 3: docker compose run --rm adaptive   (graph + eval suite + dashboard)
+  adaptive:
+    <<: *airflow-common
+    profiles: ["agents"]
+    working_dir: /opt/airflow
+    command: python -m adaptive.run_all
 
 volumes:
   pgdata:

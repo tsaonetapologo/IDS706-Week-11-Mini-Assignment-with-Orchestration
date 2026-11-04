@@ -1,0 +1,34 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	loader(loader)
+	validator(validator)
+	cleaner(cleaner)
+	planner(planner)
+	trainer(trainer)
+	evaluator(evaluator)
+	diagnostician(diagnostician)
+	reporter(reporter)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> loader;
+	cleaner --> planner;
+	diagnostician --> trainer;
+	evaluator -.-> diagnostician;
+	evaluator -.-> reporter;
+	loader -.-> reporter;
+	loader -.-> validator;
+	planner --> trainer;
+	trainer -.-> evaluator;
+	trainer -.-> reporter;
+	validator -.-> cleaner;
+	validator -.-> planner;
+	reporter --> __end__;
+	loader -.-> loader;
+	trainer -.-> trainer;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc

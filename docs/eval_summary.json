@@ -1,0 +1,20 @@
+{
+  "airflow_fixed": {
+    "pass": 1,
+    "mean": 0.48214285714285715,
+    "fits": 5,
+    "coord": 0.42857142857142855
+  },
+  "simple_loop": {
+    "pass": 1,
+    "mean": 0.4107142857142857,
+    "fits": 12,
+    "coord": 0.14285714285714285
+  },
+  "adaptive_langgraph": {
+    "pass": 7,
+    "mean": 1.0,
+    "fits": 12,
+    "coord": 1.0
+  }
+}
