@@ -97,7 +97,9 @@ I built a LangGraph `StateGraph` of eight agents with distinct jobs: **Loader, V
 
 ![Adaptive workflow graph](docs/adaptive_graph.png)
 
-**Dashboard:** [docs/dashboard.html](docs/dashboard.html) (open in a browser; [screenshot](docs/part3_dashboard.png)). It shows the graph, the summary, a chart, the test-case table and every run's trace. The Mermaid source is [docs/adaptive_graph.mmd](docs/adaptive_graph.mmd). `docker compose run --rm adaptive` regenerates all of it, and also writes a per-node trace to `output/adaptive_trace.jsonl`. LangSmith tracing turns on with `LANGSMITH_TRACING=true LANGSMITH_API_KEY=...`, but I haven't run that path, so it's untested.
+**Dashboard:** [docs/dashboard.html](docs/dashboard.html) (open in a browser; [screenshot](docs/part3_dashboard.png)). It shows the graph, the summary, a chart, the test-case table and every run's trace. The Mermaid source is [docs/adaptive_graph.mmd](docs/adaptive_graph.mmd). `docker compose run --rm adaptive` regenerates all of it, and also writes a per-node trace to `output/adaptive_trace.jsonl`. I also ran it with LangSmith tracing (`LANGSMITH_TRACING=true LANGSMITH_API_KEY=... docker compose run --rm adaptive`) and checked the traces in the `ids706-adaptive-agents` project: [trace list](docs/langsmith_traces.png) and [one expanded run](docs/langsmith_expanded_trace.png). The 16 traces are my 8 adaptive runs (`adaptive:T1_nominal` … `T8_tight_budget`) plus 8 unnamed `LangGraph` traces, which are the class loop's own graph runs; the two red ones are the class loop crashing on my injected faults (`TransientError`, `ValueError: Input y contains NaN`), as expected.
+
+![LangSmith expanded trace](docs/langsmith_expanded_trace.png)
 
 **Evaluation suite** ([adaptive/eval_suite.py](adaptive/eval_suite.py)). I wrote 8 test cases. Each one specifies the input (dataset variant, injected faults, budget), the expected behaviour, weighted scoring checks and a pass threshold of 0.8:
 
